@@ -12,5 +12,7 @@
 boost_1_70_0/
 boost/
 **./boost/
+main.dSYM/
+**.main.dSYM/
 
 
