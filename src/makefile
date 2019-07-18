@@ -6,11 +6,11 @@ FF_ROOT		= /Users/lucacorbucci/Dropbox/Università/Magistrale/"Parallel and dis
 endif
 
 CXX		= g++ -std=c++17 #-DNO_DEFAULT_MAPPING
-INCLUDES	= -I $(FF_ROOT)
+INCLUDES	= -I ./
 CXXFLAGS  	= -g
 
 LDFLAGS 	= -pthread
-OPTFLAGS	= -O3 -finline-functions -DNDEBUG
+OPTFLAGS	= -O3 -finline-functions -DNDEBUG 
 
 TARGETS		= main
 

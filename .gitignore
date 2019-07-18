@@ -1,0 +1,16 @@
+**/*.o
+**/*.out
+**/.idea
+**/cmake-build-debug
+**/.vscode
+**/.DS_Store
+**./*.dSYM
+**./*.txt
+**./*.gcno
+**./*.gcda
+**./*.fib.cpp
+boost_1_70_0/
+boost/
+**./boost/
+
+

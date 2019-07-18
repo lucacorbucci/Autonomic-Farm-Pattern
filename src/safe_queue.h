@@ -1,5 +1,5 @@
 // @Authors Corbucci Luca
-
+// clang-format off
 #include <condition_variable>
 #include <exception>
 #include <iostream>
@@ -7,6 +7,7 @@
 #include <mutex>
 #include <queue>
 #include <thread>
+// clang-format on
 
 struct MyException : public std::exception {
     const char* what() const throw() {
