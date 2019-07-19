@@ -3,15 +3,18 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <boost/lockfree/spsc_queue.hpp>
+#include <boost/lockfree/queue.hpp>
 #include "Worker.hpp"
 #include "Emitter.hpp"
 #include "Collector.hpp"
 #include <mutex>
-#include <boost/lockfree/spsc_queue.hpp>
-#include <boost/lockfree/queue.hpp>
 #include <chrono>
 // clang-format on
 
+#define MAX_SIZE
+
+template <class T>
 class Farm {
    private:
     std::vector<boost::lockfree::spsc_queue<Task>*> inputQueues;
@@ -28,13 +31,12 @@ class Farm {
 
     void start() {
         for (int i = 0; i < this->nWorker; i++) {
-            this->inputQueues.push_back(new boost::lockfree::spsc_queue<Task>{std::numeric_limits<unsigned int>::max()});
+            inputQueues.push_back(new boost::lockfree::spsc_queue<Task>{1024 * 1024});
         }
 
         Emitter<int> e{this->inputQueues};
         e.start();
 
-        //
         for (int i = 0; i < this->nWorker; i++) {
             this->workerQueue.push_back(Worker<int, int>{this->function, this->inputQueues[i], this->outputQueue});
         }
