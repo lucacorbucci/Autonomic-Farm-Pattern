@@ -19,7 +19,7 @@ TARGETS		= main
 
 
 %: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OPTFLAGS) -o $@ $< $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(OPTFLAGS) -o $@.out $< $(LDFLAGS)
 
 all		: $(TARGETS)
 clean		:

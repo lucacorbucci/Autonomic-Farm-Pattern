@@ -3,17 +3,21 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <boost/lockfree/queue.hpp>
 // clang-format on
 
 template <class T>
 class Collector {
    private:
-    SafeQueue<T> *inputQueue;
+    boost::lockfree::queue<int> *inputQueue;
     std::thread collectorThread;
+    int activeWorkers;
+    std::vector<int> accumulator;
 
    public:
-    Collector(SafeQueue<T> *inputQueue) {
+    Collector(boost::lockfree::queue<int> *inputQueue, int activeWorkers) {
         this->inputQueue = inputQueue;
+        this->activeWorkers = activeWorkers;
     }
 
     void start() {
@@ -21,10 +25,14 @@ class Collector {
         this->collectorThread = std::thread([=] {
             int counter = 0;
             while (true) {
-                int x = inputQueue->safe_pop();
-                if (x == -1) {
-                    counter++;
-                    if (counter == 4) break;
+                int x;
+                if (inputQueue->pop(x)) {
+                    if (x == -1) {
+                        counter++;
+                        if (counter == this->activeWorkers) break;
+                    } else {
+                        accumulator.push_back(x);
+                    }
                 }
             }
         });

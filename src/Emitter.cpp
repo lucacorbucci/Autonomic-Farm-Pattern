@@ -22,7 +22,7 @@ class Emitter {
     void start() {
         std::cout << "Emitter avviato" << std::endl;
         this->emitterThread = std::thread([=] {
-            int i = 100;
+            int i = 10;
             auto index = 0;
             while (i > 0) {
                 index = mod(i, outputQueue.size());
@@ -30,7 +30,6 @@ class Emitter {
                 i--;
             }
             for (int y = 0; y < outputQueue.size(); y++) {
-                // std::cout << "emmit -1" << std::endl;
                 outputQueue[y]->push(-1);
             }
         });
@@ -38,6 +37,5 @@ class Emitter {
 
     void join() {
         this->emitterThread.join();
-        // std::cout << "joinato emitter" << std::endl;
     }
 };
