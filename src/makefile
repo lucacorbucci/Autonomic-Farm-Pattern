@@ -23,6 +23,6 @@ TARGETS		= main
 
 all		: $(TARGETS)
 clean		:
-	rm -f $(TARGETS)
+	rm -f $(TARGETS).out
 cleanall	: clean
 	\rm -f *.o *~

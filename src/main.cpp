@@ -17,10 +17,16 @@ int fib(int x) {
 }
 
 int main(int argc, char* argv[]) {
-    int nWorker = atoi(argv[1]);
+    if (argc >= 3) {
+        int nWorker = atoi(argv[1]);
+        int tsGoal = atoi(argv[2]);
 
-    Farm<int>
-        f = Farm<int>(nWorker, fib);
-    f.start();
+        Farm<int>
+            f = Farm<int>(nWorker, fib, tsGoal);
+        f.start();
+    } else {
+        // TODO
+    }
+
     return 0;
 }

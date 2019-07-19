@@ -12,14 +12,16 @@ class Collector {
     boost::lockfree::queue<Task> *inputQueue;
     std::thread collectorThread;
     int activeWorkers;
+    int tsGoal;
     std::vector<int> accumulator;
 
    public:
     /*
     */
-    Collector(boost::lockfree::queue<Task> *inputQueue, int activeWorkers) {
+    Collector(boost::lockfree::queue<Task> *inputQueue, int activeWorkers, int tsGoal) {
         this->inputQueue = inputQueue;
         this->activeWorkers = activeWorkers;
+        this->tsGoal = tsGoal;
     }
 
     /*
@@ -37,8 +39,11 @@ class Collector {
                         counter++;
                         if (counter == this->activeWorkers) break;
                     } else {
+                        this->activeWorkers = t.workingThreads;
                         std::chrono::duration<double> elapsed = t.endingTime - t.startingTime;
-                        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
+                        //std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
+
+                        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << " " << this->tsGoal << " " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / this->tsGoal << " current " << this->activeWorkers << std::endl;
                     }
                     accumulator.push_back(t.value);
                 }
