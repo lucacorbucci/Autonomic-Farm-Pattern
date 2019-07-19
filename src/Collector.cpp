@@ -9,36 +9,45 @@
 template <class T>
 class Collector {
    private:
-    boost::lockfree::queue<int> *inputQueue;
+    boost::lockfree::queue<Task> *inputQueue;
     std::thread collectorThread;
     int activeWorkers;
     std::vector<int> accumulator;
 
    public:
-    Collector(boost::lockfree::queue<int> *inputQueue, int activeWorkers) {
+    /*
+    */
+    Collector(boost::lockfree::queue<Task> *inputQueue, int activeWorkers) {
         this->inputQueue = inputQueue;
         this->activeWorkers = activeWorkers;
     }
 
+    /*
+        
+    */
     void start() {
         std::cout << "Collector avviato" << std::endl;
         this->collectorThread = std::thread([=] {
             int counter = 0;
             while (true) {
-                int x;
-                if (inputQueue->pop(x)) {
-                    if (x == -1) {
+                Task t;
+                //I have to check if the queue is empty or not.
+                if (inputQueue->pop(t)) {
+                    if (t.value == -1) {
                         counter++;
                         if (counter == this->activeWorkers) break;
                     } else {
-                        accumulator.push_back(x);
+                        std::chrono::duration<double> elapsed = t.endingTime - t.startingTime;
+                        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
                     }
+                    accumulator.push_back(t.value);
                 }
             }
         });
     }
 
-    void join() {
+    void
+    join() {
         this->collectorThread.join();
     }
 };

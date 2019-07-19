@@ -9,11 +9,11 @@
 template <class T>
 class Emitter {
    private:
-    std::vector<boost::lockfree::spsc_queue<int> *> outputQueue;
+    std::vector<boost::lockfree::spsc_queue<Task> *> outputQueue;
     std::thread emitterThread;
 
    public:
-    Emitter(std::vector<boost::lockfree::spsc_queue<int> *> outputQueue) {
+    Emitter(std::vector<boost::lockfree::spsc_queue<Task> *> outputQueue) {
         this->outputQueue = outputQueue;
     }
 
@@ -22,15 +22,26 @@ class Emitter {
     void start() {
         std::cout << "Emitter avviato" << std::endl;
         this->emitterThread = std::thread([=] {
-            int i = 10;
+            int i = 100;
             auto index = 0;
             while (i > 0) {
+                Task task;
+
                 index = mod(i, outputQueue.size());
-                outputQueue[index]->push(i);
+                if (i > 70)
+                    task.value = 40;
+                else if (i > 30)
+                    task.value = 43;
+                else
+                    task.value = 45;
+                outputQueue[index]->push(task);
+
                 i--;
             }
             for (int y = 0; y < outputQueue.size(); y++) {
-                outputQueue[y]->push(-1);
+                Task task;
+                task.value = -1;
+                outputQueue[y]->push(task);
             }
         });
     }

@@ -10,6 +10,7 @@
 #include "utimer.hpp"
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/lockfree/queue.hpp>
+#include <chrono>
 // clang-format on
 
 int fib(int x) {
@@ -22,18 +23,18 @@ int fib(int x) {
 
 int main(int argc, char* argv[]) {
     int nWorker = atoi(argv[1]);
-    std::vector<boost::lockfree::spsc_queue<int>*> inputQueues;
-    boost::lockfree::queue<int>* outputQueue = new boost::lockfree::queue<int>();
+    std::vector<boost::lockfree::spsc_queue<Task>*> inputQueues;
+    boost::lockfree::queue<Task>* outputQueue = new boost::lockfree::queue<Task>();
     std::vector<Worker<int, int>> workerQueue;
 
     for (int i = 0; i < nWorker; i++) {
-        inputQueues.push_back(new boost::lockfree::spsc_queue<int>{std::numeric_limits<unsigned int>::max()});
+        inputQueues.push_back(new boost::lockfree::spsc_queue<Task>{std::numeric_limits<unsigned int>::max()});
     }
 
     Emitter<int> e{inputQueues};
     e.start();
 
-    // Worker
+    //
     for (int i = 0; i < nWorker; i++) {
         workerQueue.push_back(Worker<int, int>{fib, inputQueues[i], outputQueue});
     }
