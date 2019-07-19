@@ -14,5 +14,4 @@ boost/
 **./boost/
 main.dSYM/
 **.main.dSYM/
-
-
+**.main.out.dSYM/
