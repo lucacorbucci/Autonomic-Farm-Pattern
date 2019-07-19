@@ -8,11 +8,10 @@
 #include <utility>
 #include <vector>
 #include <condition_variable>
-#include "./safe_queue.h"
 #include <math.h>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/lockfree/queue.hpp>
-#include "Task.hpp"
+#include "../Utils/Task.hpp"
 // clang-format on
 
 template <class T, class U>
