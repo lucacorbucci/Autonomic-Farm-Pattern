@@ -18,6 +18,7 @@
 #define WORKING true;
 #define STOPPED false;
 
+///  @brief Implementation of the Worker of the autonomic farm
 template <class T, class U>
 class Worker {
    private:
@@ -30,24 +31,20 @@ class Worker {
     std::unique_lock<std::mutex> *lock;
     bool status = true;
 
-   public:
-    Worker(std::function<int(int x)> fun, boost::lockfree::spsc_queue<Task> *inputQueue, boost::lockfree::queue<Task> *outputQueue) {
-        this->function = fun;
-        this->inputQueue = inputQueue;
-        this->outputQueue = outputQueue;
-        d_mutex = new std::mutex();
-        lock = new std::unique_lock<std::mutex>(*d_mutex);
-        waitCondition = new std::condition_variable();
-        this->status = true;
+    ///  @brief Put this thread in sleep
+    ///  @return Void
+    void sleep() {
+        this->waitCondition->wait(*lock);
     }
 
-    /*
-        This function pop an item from the input queue.
-        Returns -1 if it is the last item of the queue and i have to kill
-        the worker. In this case i send a Task with value -1 to the collector.
-        Returns 0 if it's not the last item. In this case i send the task that i've popped
-        from the queue to the collector.
-    */
+    ///  @brief Wake up a sleeping worker
+    ///  @details
+    ///  This function pop an item from the input queue.
+    ///
+    ///  @return Returns -1 if it is the last item of the queue and i have to kill
+    ///  the worker. In this case i send a Task with value -1 to the collector.
+    ///  Returns 0 if it's not the last item. In this case i send the task that i've popped
+    ///  from the queue to the collector.
     int compute() {
         Task t;
         if (inputQueue->pop(t)) {
@@ -65,14 +62,20 @@ class Worker {
         return 0;
     }
 
-    /*
-        This function puts the thread in sleep, i've used the condition variable
-        and the call wait to block the worker until the emitter decide to wake it up.
-    */
-    void sleep() {
-        this->waitCondition->wait(*lock);
+   public:
+    ///  @brief Constructor method of the Worker component
+    Worker(std::function<int(int x)> fun, boost::lockfree::spsc_queue<Task> *inputQueue, boost::lockfree::queue<Task> *outputQueue) {
+        this->function = fun;
+        this->inputQueue = inputQueue;
+        this->outputQueue = outputQueue;
+        d_mutex = new std::mutex();
+        lock = new std::unique_lock<std::mutex>(*d_mutex);
+        waitCondition = new std::condition_variable();
+        this->status = true;
     }
 
+    ///  @brief This function starts the Worker and computes the task
+    ///  @return Void
     void start() {
         std::cout << "worker avviato" << std::endl;
         this->workerThread = new std::thread([=] {
@@ -87,21 +90,28 @@ class Worker {
         });
     }
 
+    ///  @brief Stop a worker
+    ///  @return False if the function works correctely
     bool stopWorker() {
         this->status = false;
         return this->status;
     }
-
+    ///  @brief This function Checks if the worker is active
+    ///  @return True if the worker is active, False if the worker is sleeping
     bool isActive() {
         return this->status;
     }
 
+    ///  @brief This function restart a sleeping thread
+    ///  @return True if the function works correctely
     bool restartWorker() {
         this->status = true;
         this->waitCondition->notify_one();
         return this->status;
     }
 
+    ///  @brief This function is used to join the emitter thread
+    ///  @return Void
     void join() {
         this->workerThread->join();
     }

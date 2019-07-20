@@ -6,6 +6,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 // clang-format on
 
+///  @brief Implementation of the Emitter of the autonomic farm
 template <class T>
 class Emitter {
    private:
@@ -18,6 +19,8 @@ class Emitter {
     int nWorker;
     int maxnWorker;
 
+    ///  @brief This function return the index of first active worker
+    ///  @return The index of the first active worker
     int getFirstActive() {
         int index = 0;
         int f = 0;
@@ -30,6 +33,8 @@ class Emitter {
         return -1;
     }
 
+    ///  @brief This function return the index of first sleeping worker
+    ///  @return The index of the first sleeping worker
     int getFirstSleeping() {
         int index = 0;
         for (auto x : bitVector) {
@@ -41,6 +46,8 @@ class Emitter {
         return -1;
     }
 
+    ///  @brief This function send a sleep signal to a worker
+    ///  @return Void
     void sendSleepSignal(int currentNumWorker, int prevNumWorker) {
         int toSleep = prevNumWorker - currentNumWorker;
         int j = 0;
@@ -57,6 +64,11 @@ class Emitter {
         }
     }
 
+    ///  @brief Wake up a sleeping worker
+    ///  @details
+    ///  This function compute the number of workers that it has to wake up
+    ///  and then send a restart signal to the thread.
+    ///  @return Void
     void sendWakeUpSignal(int currentNumWorker, int prevNumWorker) {
         int toWakeUp = currentNumWorker - prevNumWorker;
         int j = 0;
@@ -72,28 +84,26 @@ class Emitter {
         }
     }
 
-   public:
-    Emitter(std::vector<boost::lockfree::spsc_queue<Task> *> outputQueue, std::vector<Worker<int, int> *> workerQueue, int nWorker, boost::lockfree::spsc_queue<Feedback> *feedbackQueue, std::vector<Task> inputVector) {
-        this->outputQueue = outputQueue;
-        this->workerQueue = workerQueue;
-        this->nWorker = nWorker;
-        this->maxnWorker = nWorker;
-        this->feedbackQueue = feedbackQueue;
-        this->inputVector = inputVector;
-        bitVector.reserve(nWorker);
-        for (int i = 0; i < nWorker; i++) {
-            bitVector.push_back(1);
-        }
-    }
-
+    ///  @brief Compute the modulo between and b
+    ///  @return The modulo between and b
     long mod(long a, long b) { return (a % b + b) % b; }
 
+    ///  @brief Send a sleep or a wake up signal to one of the worker
+    ///  @return Void
     void updateWorkers(int prevNumWorker, int currentNumWorker) {
         currentNumWorker < prevNumWorker
             ? sendSleepSignal(currentNumWorker, prevNumWorker)
             : sendWakeUpSignal(currentNumWorker, prevNumWorker);
     }
 
+    ///  @brief code of the emitter of the autonomic farm
+    ///  @details
+    ///  This function extracts a task from the input vector and push this task
+    ///  to the input spsc queue of an active worker.
+    ///  This function also extracts  a feedback from the spsc queue connected with
+    ///  the collector  and based on this feedback send a sleep or a wake up signal
+    ///  to one of the workers.
+    ///  @return Void
     void threadBody() {
         int i = 0, index = 0, currentNumWorker = this->nWorker, prevNumWorker = this->nWorker, dst = 0;
         while (i < inputVector.size()) {
@@ -129,6 +139,23 @@ class Emitter {
         }
     }
 
+   public:
+    ///  @brief Constructor method of the Emitter component
+    Emitter(std::vector<boost::lockfree::spsc_queue<Task> *> outputQueue, std::vector<Worker<int, int> *> workerQueue, int nWorker, boost::lockfree::spsc_queue<Feedback> *feedbackQueue, std::vector<Task> inputVector) {
+        this->outputQueue = outputQueue;
+        this->workerQueue = workerQueue;
+        this->nWorker = nWorker;
+        this->maxnWorker = nWorker;
+        this->feedbackQueue = feedbackQueue;
+        this->inputVector = inputVector;
+        bitVector.reserve(nWorker);
+        for (int i = 0; i < nWorker; i++) {
+            bitVector.push_back(1);
+        }
+    }
+
+    ///  @brief Start the thread of the emitter componentend.
+    ///  @return Void
     void start(std::vector<Worker<int, int> *> workQueue) {
         std::cout << "Emitter avviato" << std::endl;
         this->emitterThread = std::thread([=] {
@@ -136,6 +163,8 @@ class Emitter {
         });
     }
 
+    ///  @brief This function is used to join the emitter thread
+    ///  @return Void
     void join() {
         this->emitterThread.join();
     }

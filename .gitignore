@@ -16,3 +16,5 @@ main.dSYM/
 main.out.dSYM/
 **.main.dSYM/
 **.main.out.dSYM/
+**.Doxyfile/
+Doxyfile

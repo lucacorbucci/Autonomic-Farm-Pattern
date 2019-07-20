@@ -6,6 +6,7 @@
 #include <boost/lockfree/queue.hpp>
 // clang-format on
 
+///  @brief Implementation of the collector of the autonomic farm
 template <class T>
 class Collector {
    private:
@@ -17,9 +18,8 @@ class Collector {
     int tsGoal;
     int maxWorkers;
 
+    ///  @brief Constructor method of the Collector component
    public:
-    /*
-    */
     Collector(boost::lockfree::queue<Task> *inputQueue, int activeWorkers, int tsGoal, boost::lockfree::spsc_queue<Feedback> *feedbackQueue) {
         this->inputQueue = inputQueue;
         this->activeWorkers = activeWorkers;
@@ -28,9 +28,14 @@ class Collector {
         this->feedbackQueue = feedbackQueue;
     }
 
-    /*
-        
-    */
+    ///  @brief Start the collector componentend.
+    ///  @details
+    ///  This function extracts a computed task from the input queue and computes
+    ///  the best number of workers that will be used to compute the next tasks
+    ///  based on the elapsed time of the popped task.
+    ///  This function uses a spsc queue to communicate with the emitter to change
+    ///  the number of workers
+    ///  @return Void
     void start() {
         std::cout << "Collector avviato" << std::endl;
         this->collectorThread = std::thread([=] {
@@ -74,8 +79,9 @@ class Collector {
         });
     }
 
-    void
-    join() {
+    ///  @brief This function is used to join the thread
+    ///  @return Void
+    void join() {
         this->collectorThread.join();
     }
 };

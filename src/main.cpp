@@ -3,7 +3,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#include "./AutonomicFarm/Farm.hpp"
+#include "./AutonomicFarm/AutonomicFarm.hpp"
 #include <mutex>
 #include <chrono>
 // clang-format on
@@ -33,7 +33,24 @@ std::vector<Task> fillVector(int inputSize, int n1, int n2, int n3) {
     return inputVector;
 }
 
-// 40 43 45
+///  @brief
+///
+///  @tparam T   Any float-point type such as float, double or long double
+///  @param fun  Non-linear function f(x)
+///  @param dfun Derivative of non-linear function df(x) = d/dx f(x)
+///  @param x0   Initial guess
+///  @param eps  Tolerance for stopping criteria.
+///  @return     Equation result as a float point type T.
+///
+///  @details
+///
+///
+
+///  Example:
+///  @code
+///
+///  @endcode
+///
 int main(int argc, char* argv[]) {
     if (argc >= 7) {
         int nWorker = atoi(argv[1]);
@@ -48,7 +65,7 @@ int main(int argc, char* argv[]) {
             inputVector = fillVector(inputSize, input1, input2, input3);
 
         // Create the farm
-        Farm<int> f = Farm<int>(nWorker, fib, tsGoal, inputVector);
+        AutonomicFarm<int> f = AutonomicFarm<int>(nWorker, fib, tsGoal, inputVector);
         f.start();
     } else {
         std::cout << argv[0] << " Usage: nWorker, tsGoal" << std::endl;
