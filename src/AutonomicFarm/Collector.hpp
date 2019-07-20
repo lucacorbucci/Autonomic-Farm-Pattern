@@ -50,8 +50,9 @@ class Collector {
                         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
                         //std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
                         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / this->activeWorkers;
-                        int newNWorker = elapsedINT / this->tsGoal;
-                        std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << this->activeWorkers << " new number of workers: " << newNWorker << std::endl;
+                        int newNWorker = round(float(elapsedINT) / this->tsGoal);
+
+                        //std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << this->activeWorkers << " new number of workers: " << newNWorker << std::endl;
                         Feedback f;
                         if (newNWorker != currentWorkers) {
                             currentWorkers = newNWorker;

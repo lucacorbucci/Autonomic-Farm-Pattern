@@ -25,15 +25,17 @@ class Farm {
     std::vector<Worker<int, int>*> workerQueue;
     boost::lockfree::spsc_queue<Feedback>* feedbackQueue;
     std::function<int(int x)> function;
+    std::vector<Task> inputVector;
     int nWorker;
     int tsGoal;
 
    public:
-    Farm(int nWorker, std::function<int(int x)> function, int tsGoal) {
+    Farm(int nWorker, std::function<int(int x)> function, int tsGoal, std::vector<Task> inputVector) {
         this->nWorker = nWorker;
         this->function = function;
         this->tsGoal = tsGoal;
         this->feedbackQueue = new boost::lockfree::spsc_queue<Feedback>{1024 * 1024};
+        this->inputVector = inputVector;
     }
 
     void start() {
@@ -45,7 +47,7 @@ class Farm {
             this->workerQueue.push_back(new Worker<int, int>{this->function, this->inputQueues[i], this->outputQueue});
         }
 
-        Emitter<int> e{this->inputQueues, workerQueue, nWorker, this->feedbackQueue};
+        Emitter<int> e{this->inputQueues, workerQueue, nWorker, this->feedbackQueue, this->inputVector};
 
         for (int i = 0; i < this->nWorker; i++) {
             this->workerQueue[i]->start();

@@ -16,13 +16,39 @@ int fib(int x) {
     }
 }
 
+std::vector<Task> fillVector(int inputSize, int n1, int n2, int n3) {
+    std::vector<Task> inputVector;
+    inputVector.reserve(inputSize);
+    for (int i = 0; i < inputSize; i++) {
+        Task task;
+        if (i > 2 * (inputSize / 3))
+            task.value = n1;
+        else if (i > (inputSize / 3)) {
+            task.value = n2;
+        } else {
+            task.value = n3;
+        }
+        inputVector.push_back(task);
+    }
+    return inputVector;
+}
+
+// 40 43 45
 int main(int argc, char* argv[]) {
-    if (argc >= 3) {
+    if (argc >= 7) {
         int nWorker = atoi(argv[1]);
         int tsGoal = atoi(argv[2]);
+        int inputSize = atoi(argv[3]);
+        int input1 = atoi(argv[4]);
+        int input2 = atoi(argv[5]);
+        int input3 = atoi(argv[6]);
 
-        Farm<int>
-            f = Farm<int>(nWorker, fib, tsGoal);
+        // Fill the vector with input task
+        std::vector<Task>
+            inputVector = fillVector(inputSize, input1, input2, input3);
+
+        // Create the farm
+        Farm<int> f = Farm<int>(nWorker, fib, tsGoal, inputVector);
         f.start();
     } else {
         std::cout << argv[0] << " Usage: nWorker, tsGoal" << std::endl;
