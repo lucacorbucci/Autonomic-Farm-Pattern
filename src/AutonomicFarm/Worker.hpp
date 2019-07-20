@@ -12,6 +12,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/lockfree/queue.hpp>
 #include "../Utils/Task.hpp"
+#include "../Utils/Feedback.hpp"
 // clang-format on
 
 #define WORKING true;
@@ -40,43 +41,68 @@ class Worker {
         this->status = true;
     }
 
+    /*
+        This function pop an item from the input queue.
+        Returns -1 if it is the last item of the queue and i have to kill
+        the worker. In this case i send a Task with value -1 to the collector.
+        Returns 0 if it's not the last item. In this case i send the task that i've popped
+        from the queue to the collector.
+    */
+    int compute() {
+        Task t;
+        if (inputQueue->pop(t)) {
+            t.startingTime = std::chrono::high_resolution_clock::now();
+            if (t.value == -1) {
+                outputQueue->push(t);
+                return -1;
+            } else {
+                //std::cout << std::this_thread::get_id() << std::endl;
+                this->function(t.value);
+                t.endingTime = std::chrono::high_resolution_clock::now();
+                outputQueue->push(t);
+            }
+        }
+        return 0;
+    }
+
+    /*
+        This function puts the thread in sleep, i've used the condition variable
+        and the call wait to block the worker until the emitter decide to wake it up.
+    */
+    void sleep() {
+        this->waitCondition->wait(*lock);
+    }
+
     void start() {
         std::cout << "worker avviato" << std::endl;
         this->workerThread = new std::thread([=] {
             while (true) {
-                this->waitCondition->wait(*lock, [=] { return this->status; });
-
-                Task t;
-                if (inputQueue->pop(t)) {
-                    t.startingTime = std::chrono::high_resolution_clock::now();
-                    if (t.value == -1) {
-                        outputQueue->push(t);
-                        break;
-                    } else {
-                        this->function(t.value);
-                        t.endingTime = std::chrono::high_resolution_clock::now();
-                        outputQueue->push(t);
-                    }
+                if (compute() == -1) break;
+                if (!isActive()) {
+                    // I empty the queue before going to sleep
+                    if (compute() == -1) break;
+                    sleep();
                 }
             }
         });
     }
 
-    void stopWorker() {
+    bool stopWorker() {
         this->status = false;
-    }
-
-    bool getStatus() {
         return this->status;
     }
 
-    void restartWorker() {
-        this->status = true;
-        //this->waitCondition->notify_one();
+    bool isActive() {
+        return this->status;
     }
 
-    void
-    join() {
+    bool restartWorker() {
+        this->status = true;
+        this->waitCondition->notify_one();
+        return this->status;
+    }
+
+    void join() {
         this->workerThread->join();
     }
 };

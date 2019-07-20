@@ -23,8 +23,9 @@ class Farm {
     std::vector<boost::lockfree::spsc_queue<Task>*> inputQueues;
     boost::lockfree::queue<Task>* outputQueue = new boost::lockfree::queue<Task>();
     std::vector<Worker<int, int>*> workerQueue;
-    int nWorker;
+    boost::lockfree::spsc_queue<Feedback>* feedbackQueue;
     std::function<int(int x)> function;
+    int nWorker;
     int tsGoal;
 
    public:
@@ -32,18 +33,19 @@ class Farm {
         this->nWorker = nWorker;
         this->function = function;
         this->tsGoal = tsGoal;
+        this->feedbackQueue = new boost::lockfree::spsc_queue<Feedback>{1024 * 1024};
     }
 
     void start() {
         for (int i = 0; i < this->nWorker; i++) {
-            inputQueues.push_back(new boost::lockfree::spsc_queue<Task>{1024 * 1024});
+            inputQueues.push_back(new boost::lockfree::spsc_queue<Task>{1});
         }
-
-        Emitter<int> e{this->inputQueues, workerQueue, nWorker};
 
         for (int i = 0; i < this->nWorker; i++) {
             this->workerQueue.push_back(new Worker<int, int>{this->function, this->inputQueues[i], this->outputQueue});
         }
+
+        Emitter<int> e{this->inputQueues, workerQueue, nWorker, this->feedbackQueue};
 
         for (int i = 0; i < this->nWorker; i++) {
             this->workerQueue[i]->start();
@@ -51,7 +53,7 @@ class Farm {
 
         e.start(workerQueue);
 
-        Collector<int> c{this->outputQueue, this->nWorker, this->tsGoal};
+        Collector<int> c{this->outputQueue, this->nWorker, this->tsGoal, this->feedbackQueue};
         c.start();
 
         for (int i = 0; i < this->nWorker; i++) {

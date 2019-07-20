@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
             f = Farm<int>(nWorker, fib, tsGoal);
         f.start();
     } else {
-        // TODO
+        std::cout << argv[0] << " Usage: nWorker, tsGoal" << std::endl;
     }
 
     return 0;
