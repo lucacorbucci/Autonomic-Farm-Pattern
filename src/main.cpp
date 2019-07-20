@@ -33,24 +33,6 @@ std::vector<Task> fillVector(int inputSize, int n1, int n2, int n3) {
     return inputVector;
 }
 
-///  @brief
-///
-///  @tparam T   Any float-point type such as float, double or long double
-///  @param fun  Non-linear function f(x)
-///  @param dfun Derivative of non-linear function df(x) = d/dx f(x)
-///  @param x0   Initial guess
-///  @param eps  Tolerance for stopping criteria.
-///  @return     Equation result as a float point type T.
-///
-///  @details
-///
-///
-
-///  Example:
-///  @code
-///
-///  @endcode
-///
 int main(int argc, char* argv[]) {
     if (argc >= 7) {
         int nWorker = atoi(argv[1]);
