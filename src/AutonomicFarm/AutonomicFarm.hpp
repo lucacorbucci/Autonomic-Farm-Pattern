@@ -35,7 +35,7 @@ class AutonomicFarm {
     ///
     ///  @param nWorker     Initial number of workers
     ///  @param function    The function computing the single task in the autonomic farm
-    ///  @param tsGoal      Expected service time (TS)
+    ///  @param tsGoal      Expected service time
     ///  @param inputVector Input Vector with the tasks that has to be computed
     ///
    public:
