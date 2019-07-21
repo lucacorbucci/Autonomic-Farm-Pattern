@@ -1,4 +1,4 @@
-# Parallel and Distributed Systems: Paradigms and Models.
+# Parallel and Distributed Systems: Paradigms and Models
 
 ## Autonomic-Farm-Pattern
 
