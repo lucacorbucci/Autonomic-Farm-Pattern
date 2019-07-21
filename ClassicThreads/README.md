@@ -13,7 +13,7 @@ The project is divided into two folders:
 
 #### Implementation
 
-To implement the Autonomic-Farm-Pattern i create the following components:
+To implement the Autonomic-Farm-Pattern i created the following components:
 
 - Emitter
 - Worker
