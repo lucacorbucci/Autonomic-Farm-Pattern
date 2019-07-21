@@ -2,15 +2,43 @@
 
 ## Autonomic-Farm-Pattern
 
-### Description
+### Implementation of the project using Classic Threads
 
-The goal is to provide a farm pattern ensuring (best effort) a given service time leveraging on dynamic variation of
-the parallelism degree. The farm is instantiated and run by providing:
+#### Project structure
 
-- A collection of input tasks to be computed (of type Tin)
-- A function<Tout(Tin)> computing the single task
-- An expected service time TSgoal
-- An initial parallelism degree nw
+The project is divided into two folders:
 
-During farm execution, autonomic farm management should increase or decrease the parallelism degree in such a way its service time is as close as possible to the expected service time TSgoal.
-The pattern should be tested providing a collection of tasks such that the tasks in the initial, central and final part all require a different average time to be computed (e.g. 4L in the first part, L in the second part and 8L in the third part) and the task collection execution time is considerably longer than the time needed to reconfigure the farm.
+- Docs: here you can find the documentation generate using Doxygen
+- src: here you can find the source code of the Autonomic-Farm-Pattern
+
+#### Implementation
+
+To implement the Autonomic-Farm-Pattern i create the following components:
+
+- Emitter
+- Worker
+- Collector
+
+For each of the described components i created a .hpp file located in the path /ClassicThreads/src/AutonomicFarm.
+The communication between the components is implemented using the Boost C++ Library. In particular i used the
+boost::lockfree::queue and the boost::lockfree::spsc_queue because i needed a lock free queue to avoid the system calls
+that i would have had using the locks.
+
+#### Example
+
+To test this library you can use the file main.cpp.
+In particular to create the AutonomicFarm you can use this code:
+
+```
+// Create the AutonomicFarm
+AutonomicFarm<int> f = AutonomicFarm<int>(nWorker, fib, tsGoal, inputVector);
+// Start the execution of the AutonomicFarm
+f.start();
+```
+
+You should pass the following paramers to the constructor method:
+
+- The initial number of workers
+- The function to be computed
+- The ideal service time that you want to achieve
+- A vector with the input for the function to be computed
