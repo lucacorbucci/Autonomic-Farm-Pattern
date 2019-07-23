@@ -18,3 +18,5 @@ main.out.dSYM/
 **.main.out.dSYM/
 **.Doxyfile/
 Doxyfile
+Lib/
+Debug/
