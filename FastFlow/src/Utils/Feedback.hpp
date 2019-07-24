@@ -6,4 +6,6 @@
 struct Feedback {
     /// @brief Number of active workers that we want to have in the next iteration
     int newNumberOfWorkers;
+    int workerID = -1;
+    
 };

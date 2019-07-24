@@ -22,11 +22,11 @@ std::vector<Task> fillVector(int inputSize, int n1, int n2, int n3) {
     for (int i = 0; i < inputSize; i++) {
         Task task;
         if (i > 2 * (inputSize / 3))
-            task.value = n1;
+            task.value = n3;
         else if (i > (inputSize / 3)) {
             task.value = n2;
         } else {
-            task.value = n3;
+            task.value = n1;
         }
         inputVector.push_back(task);
     }
