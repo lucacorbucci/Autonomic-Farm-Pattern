@@ -8,12 +8,11 @@
 #include "./Utils/Task.hpp"
 #include "./Utils/Feedback.hpp"
 #include <cstdio>
-
 // clang-format on
 
 using namespace ff;
 
-class Emitter : public ff_node {
+struct Emitter : ff_node_t<Feedback, Task> {
    private:
     ff_loadbalancer *const lb;
     bool eos_received;
@@ -68,48 +67,32 @@ class Emitter : public ff_node {
         return 0;
     }
 
-    void *svc(void *in) {
+    Task *svc(Feedback *in) {
         int wid = lb->get_channel_id();
-        if (wid == -2) {
-            //std::cout << "invio" << std::endl;
-            Task *task = this->tasks.at(index);
-            index++;
-            int worker = getFirstActive();
-            //std::cout << index << std::endl;
-            //std::cout << worker << std::endl;
-            lb->ff_send_out_to(task, worker);
-            sent++;
-            // std::cout << sent << std::endl;
-            if (sent == tasks.size())
-                return EOS;
-            else
-                return GO_ON;
-        } else {
-            int x = *(int *)in;
+
+        // In this case we received the feedback from the collector
+        // and we must change the parallelism degree.
+        if (in != nullptr) {
+            //Feedback *x = (Feedback *)in;
+            std::cout << in->newNumberOfWorkers << std::endl;
             count++;
-            return GO_ON;
         }
 
-        // Per addormentare un thread
-        // lb->freeze(0);
-        // lb->ff_send_out_to(GO_OUT, 0);
-        // lb->wait_freezing(0);
-        // lb->freeze(1);
-        // lb->ff_send_out_to(GO_OUT, 1);
-        // lb->wait_freezing(1);
+        // We send the task to one of the available workers
+        std::cout << "invio" << std::endl;
+        Task *task = this->tasks.at(index);
+        index++;
+        int worker = getFirstActive();
+        lb->ff_send_out_to(task, worker);
+        sent++;
+        if (sent == tasks.size())
+            return EOS;
+        else
+            return GO_ON;
     };
-
-    // void eosnotify(ssize_t id) {
-    //     if (count == 4 && sent == 4) {
-    //         std::cout << "ciao" << std::endl;
-    //         eos_received = true;
-
-    //         //lb->broadcast_task(EOS);
-    //     }
-    // }
 };
 
-class Worker : public ff_node {
+struct Worker : ff_node_t<Task> {
    private:
     std::function<int(int x)> fun;
 
@@ -118,19 +101,8 @@ class Worker : public ff_node {
         this->fun = fun;
     }
 
-    void *svc(void *t) {
-        //std::cout << "Worker" << std::endl;
-        Task *task = (Task *)t;
-        std::cout << task->value << std::endl;
-        std::cout << "worker" << std::endl;
-
-        // std::cout << "task.value" << task.value << std::endl;
-        // std::cout << "task value " << task->value << std::endl;
-        // task.startingTime = std::chrono::high_resolution_clock::now();
-        // std::cout << this->fun(10) << std::endl;
-        // task.endingTime = std::chrono::high_resolution_clock::now();
-
-        return new int(5);
+    Task *svc(Task *t) {
+        return t;
     }
 
     void svc_end() {
@@ -138,22 +110,16 @@ class Worker : public ff_node {
     }
 };
 
-class Collector : public ff_node {
+struct Collector : ff_minode_t<Task, Feedback> {
    public:
     std::vector<int> results;
 
-    void *svc(void *t) {
-        std::cout << "Collector" << std::endl;
-        //Task *task = (Task *)t;
-        int v = *(int *)t;
-        std::cout << v << std::endl;
-
-        //std::cout << task->value << std::endl;
-
-        //std::cout << "collector " << task->value << std::endl;
-        results.push_back(v);
-        return GO_ON;
-        // return new int(100);
+    Feedback *svc(Task *t) {
+        results.push_back(t->value);
+        //return GO_ON;
+        Feedback *f = new Feedback();
+        f->newNumberOfWorkers = 100;
+        return f;
     }
 
     void svc_end() {
@@ -183,18 +149,18 @@ int main(int argc, char *argv[]) {
     }
 
     ff_farm farm;
-    Collector *c = new Collector();
+    Collector c;
     Emitter *e = new Emitter(farm.getlb(), inputVector);
 
     farm.add_workers(w);
     farm.add_emitter(e);
-    farm.add_collector(c);
+    farm.add_collector(&c);
 
-    //farm.wrap_around();
+    farm.wrap_around();
     farm.run_and_wait_end();
     farm.getlb()->waitlb();
 
-    std::vector<int> results = c->results;
+    std::vector<int> results = c.results;
 
     for (auto item : results) {
         std::cout << item << std::endl;
