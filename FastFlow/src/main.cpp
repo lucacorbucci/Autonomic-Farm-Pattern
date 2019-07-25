@@ -21,7 +21,7 @@ struct Seq : ff_node_t<Task, void> {
     Seq(std::vector<Task *> tasks) : tasks(tasks) {}
 
     void *svc(Task *) {
-        for (int i = 1; i <= tasks.size(); i++) {
+        for (int i = 0; i < tasks.size(); i++) {
             ff_send_out(tasks[i]);
         }
 
@@ -42,12 +42,12 @@ struct Emitter : ff_monode_t<Task, Task> {
     std::vector<int> activeWorkers;
     std::vector<Task *> tasks;
     int lastWorker = 0;
+    int nTask;
 
     ///  @brief This function return the index of first active worker
     ///  @return The index of the first active worker
     int getFirstActive() {
-        int index = 0;
-        for (int i = lastWorker + 1; i < activeWorkers.size(); i++) {
+        for (int i = this->lastWorker; i < activeWorkers.size(); i++) {
             if (activeWorkers[i] == 1) {
                 this->lastWorker = i;
                 return i;
@@ -90,10 +90,11 @@ struct Emitter : ff_monode_t<Task, Task> {
     }
 
    public:
-    Emitter(ff_loadbalancer *const lb, std::vector<Task *> tasks, int nWorkers) : lb(lb) {
-        this->tasks = tasks;
+    std::vector<int> results;
+
+    Emitter(ff_loadbalancer *const lb, int nWorkers, int nTask) : lb(lb) {
         this->nWorkers = nWorkers;
-        this->lastWorker = get_num_outchannels();
+        this->nTask = nTask;
     }
 
     int svc_init() {
@@ -103,46 +104,61 @@ struct Emitter : ff_monode_t<Task, Task> {
             sleepingWorkers.push_back(0);
             activeWorkers.push_back(1);
         }
+        this->lastWorker = get_num_outchannels();
         return 0;
     }
 
     Task *svc(Task *in) {
         int wid = lb->get_channel_id();
-        std::cout << wid << std::endl;
-        // In this case we received the feedback from the collector
-        // and we must change the parallelism degree.
-        if ((size_t)wid < get_num_outchannels()) {
-            Feedback *feedback = reinterpret_cast<Feedback *>(in);
-
-            if (feedback->workerID > 0) {
-                setFree(wid);
-                return GO_ON;
-            } else {
-                count++;
-            }
-        }
 
         // We send the task to one of the available workers
-        int worker = getFirstActive();
+        if ((size_t)wid == -1) {
+            Task *task = reinterpret_cast<Task *>(in);
+            task->workingThreads = nWorkers;
 
-        if (worker == -1) {
-            return GO_ON;
-        } else {
-            // if ((size_t)wid == -1) {
-            //     Task *task = reinterpret_cast<Task *>(in);
-            //     task->workingThreads = nWorkers;
-            //     index++;
-            //     setWorking(worker);
-
-            //     lb->ff_send_out_to(task, worker);
-            //     sent++;
-            //     if (sent == tasks.size())
-            //         return EOS;
-            //     else {
-            //         return GO_ON;
-            //     }
-            // }
+            int worker = getFirstActive();
+            if (worker == -1) {
+                tasks.push_back(task);
+                return GO_ON;
+            } else {
+                std::cout << "Sending task to: " << worker << std::endl;
+                setWorking(worker);
+                lb->ff_send_out_to(task, worker);
+                sent++;
+                if (sent == nTask)
+                    return EOS;
+                else {
+                    return GO_ON;
+                }
+            }
         }
+        // In this case we received the feedback from one of the workers
+        else if ((size_t)wid < get_num_outchannels()) {
+            std::cout << sent << std::endl;
+
+            Task *t = reinterpret_cast<Task *>(in);
+            results.push_back(t->result);
+            //std::cout << "risvegliare " << wid << std::endl;
+
+            if (tasks.size() > 0) {
+                Task *task = reinterpret_cast<Task *>(tasks.front());
+                std::cout << "Sending task to: " << wid << std::endl;
+
+                lb->ff_send_out_to(task, wid);
+                tasks.erase(tasks.begin());
+                sent++;
+
+            } else {
+                setFree(wid);
+            }
+
+            if (sent == nTask)
+                return EOS;
+            else {
+                return GO_ON;
+            }
+        }
+        return GO_ON;
     };
 };
 
@@ -158,20 +174,18 @@ struct Worker : ff_monode_t<Task> {
     }
 
     Task *svc(Task *t) {
-        std::cout << "Worker " << ID << " Is Working" << std::endl;
+        //std::cout << "Worker " << ID << " Is Working" << std::endl;
         t->startingTime = std::chrono::high_resolution_clock::now();
-        fun(t->value);
+        t->result = fun(t->value);
 
         t->endingTime = std::chrono::high_resolution_clock::now();
-        Feedback *f = new Feedback();
+        ff_send_out_to(t, 1);
 
-        ff_send_out_to(f, 0);
-        //ff_send_out_to(t, 1);
         return t;
     }
 
     void svc_end() {
-        // printf("Worker ending\n");
+        printf("Worker ending\n");
     }
 };
 
@@ -187,6 +201,7 @@ struct Collector : ff_minode_t<Task, Feedback> {
     }
 
     Feedback *svc(Task *t) {
+        std::cout << "Collector" << std::endl;
         std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
@@ -199,7 +214,7 @@ struct Collector : ff_minode_t<Task, Feedback> {
     }
 
     void svc_end() {
-        // printf("Collector ending\n");
+        printf("Collector ending\n");
     }
 };
 
@@ -248,10 +263,10 @@ int main(int argc, char *argv[]) {
         // Fill the vector with input task
         std::vector<Task *> inputVector = fillVector(inputSize, input1, input2, input3);
         Seq seq(inputVector);
-
+        std::cout << "Vector size " << inputVector.size() << std::endl;
         ff_farm farm;
         Collector *c = new Collector(tsGoal);
-        Emitter *e = new Emitter(farm.getlb(), inputVector, nWorker);
+        Emitter *e = new Emitter(farm.getlb(), nWorker, inputSize);
 
         farm.add_workers(w);
         farm.add_emitter(e);
@@ -274,7 +289,7 @@ int main(int argc, char *argv[]) {
 
         pipe.wait();
 
-        std::vector<int> results = c->results;
+        std::vector<int> results = e->results;
 
         for (auto item : results) {
             std::cout << item << std::endl;

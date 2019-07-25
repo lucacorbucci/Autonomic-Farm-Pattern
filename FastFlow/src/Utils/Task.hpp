@@ -12,4 +12,6 @@ struct Task {
     std::chrono::high_resolution_clock::time_point startingTime;
     /// @brief Ending time of the task
     std::chrono::high_resolution_clock::time_point endingTime;
+    /// @brief Result of the application of the function
+    int result;
 };
