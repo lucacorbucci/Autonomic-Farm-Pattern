@@ -9,8 +9,6 @@
 #include <math.h>
 // clang-format on
 
-using namespace ff;
-
 struct ExternalEmitter : ff_node_t<Task, void> {
     std::vector<Task *> inputTasks;
 

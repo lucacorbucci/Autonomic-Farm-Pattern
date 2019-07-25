@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <math.h>
 #include "./Components/AutonomicFarm.hpp"
+
 // clang-format on
 
 int fib(int x) {

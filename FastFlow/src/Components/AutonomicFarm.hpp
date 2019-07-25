@@ -15,8 +15,6 @@
 #include <math.h>
 // clang-format on
 
-using namespace ff;
-
 class AutonomicFarm {
    private:
     int nWorker;

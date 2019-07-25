@@ -46,6 +46,6 @@ struct Worker : ff_monode_t<Task> {
     }
 
     void svc_end() {
-        printf("Worker ending\n");
+        printf("Going to sleep\n");
     }
 };
