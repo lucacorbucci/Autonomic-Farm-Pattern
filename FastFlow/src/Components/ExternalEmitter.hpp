@@ -5,7 +5,6 @@
 #include <vector>
 #include <ff/ff.hpp>
 #include <ff/farm.hpp>
-
 #include <cstdio>
 #include <math.h>
 // clang-format on

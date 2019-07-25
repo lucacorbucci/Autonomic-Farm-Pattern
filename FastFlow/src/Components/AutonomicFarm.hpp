@@ -5,7 +5,6 @@
 #include <vector>
 #include "../Utils/Task.hpp"
 #include "../Utils/Feedback.hpp"
-
 #include <ff/ff.hpp>
 #include <ff/farm.hpp>
 #include "./Worker.hpp"

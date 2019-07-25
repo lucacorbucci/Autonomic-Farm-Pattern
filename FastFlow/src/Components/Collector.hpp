@@ -5,7 +5,6 @@
 #include <vector>
 #include <ff/ff.hpp>
 #include <ff/farm.hpp>
-
 #include <cstdio>
 #include <math.h>
 // clang-format on
@@ -24,13 +23,7 @@ struct Collector : ff_minode_t<Task, void> {
     }
 
     void *svc(Task *t) {
-        // std::cout << "Collector" << std::endl;
-        // std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
-        // int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-        // int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
-        // int newNWorker = round(float(elapsedINT) / this->tsGoal);
-
-        results.push_back(t->result);
+                results.push_back(t->result);
         return GO_ON;
     }
 

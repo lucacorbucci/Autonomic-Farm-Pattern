@@ -5,7 +5,6 @@
 #include <vector>
 #include <ff/ff.hpp>
 #include <ff/farm.hpp>
-
 #include <cstdio>
 #include <math.h>
 // clang-format on
@@ -83,17 +82,22 @@ struct Emitter : ff_monode_t<Task, Task> {
                 inputTasks.push_back(task);
                 return GO_ON;
             } else {
+                task->workingThreads = this->nWorkers;
                 setWorking(worker);
                 sendTask(task, worker);
             }
         }
         // In this case we received the feedback from one of the workers
         else if ((size_t)wid < get_num_outchannels()) {
+            // inTask is the task that we estract from the temporary
+            // vector where we store the tasks that we receive from
+            // the external emitter that we can't send immediately to one worker.s
+            Task *inTask = reinterpret_cast<Task *>(inputTasks.front());
+
+            std::cout << task->newWorkingThreads << std::endl;
+
             if (inputTasks.size() > 0) {
-                // inTask is the task that we estract from the temporary
-                // vector where we store the tasks that we receive from
-                // the external emitter that we can't send immediately to one worker.
-                Task *inTask = reinterpret_cast<Task *>(inputTasks.front());
+                task->workingThreads = this->nWorkers;
                 sendTask(task, wid);
                 inputTasks.erase(inputTasks.begin());
             } else {
