@@ -14,4 +14,6 @@ struct Task {
     std::chrono::high_resolution_clock::time_point endingTime;
     /// @brief Result of the application of the function
     int result;
+    /// @brief Number of working threads for the next iteration
+    int newWorkingThreads;
 };
