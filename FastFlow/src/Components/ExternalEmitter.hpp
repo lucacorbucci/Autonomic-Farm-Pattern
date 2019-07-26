@@ -15,7 +15,7 @@ struct ExternalEmitter : ff_node_t<Task, void> {
     ExternalEmitter(std::vector<Task *> inputTasks) : inputTasks(inputTasks) {}
 
     void *svc(Task *) {
-        for (int i = 0; i < inputTasks.size(); i++) {
+        for (unsigned int i = 0; i < inputTasks.size(); i++) {
             ff_send_out(inputTasks[i]);
         }
 

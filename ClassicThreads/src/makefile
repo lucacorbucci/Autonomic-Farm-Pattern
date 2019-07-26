@@ -10,7 +10,7 @@ INCLUDES	= -I ./
 CXXFLAGS  	= -g
 
 LDFLAGS 	= -pthread
-OPTFLAGS	= -O3 -finline-functions -DNDEBUG 
+OPTFLAGS	= -O3 -finline-functions -DNDEBUG  -Wall -pedantic
 
 TARGETS		= main
 

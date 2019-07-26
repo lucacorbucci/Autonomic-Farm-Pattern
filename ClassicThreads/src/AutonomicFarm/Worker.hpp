@@ -80,7 +80,7 @@ class Worker {
     ///  @brief This function starts the Worker and computes the task
     ///  @return Void
     void start() {
-        std::cout << "worker avviato" << std::endl;
+        //std::cout << "worker avviato" << std::endl;
         this->workerThread = new std::thread([=] {
             while (true) {
                 if (compute() == -1) break;

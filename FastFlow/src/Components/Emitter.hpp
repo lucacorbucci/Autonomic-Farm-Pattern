@@ -31,7 +31,7 @@ struct Emitter : ff_monode_t<Task, Task> {
     ///  @brief This function return the index of first active worker
     ///  @return The index of the first active worker
     int getFirstActive() {
-        for (int i = this->lastWorker; i < activeWorkers.size(); i++) {
+        for (unsigned int i = this->lastWorker; i < activeWorkers.size(); i++) {
             if (activeWorkers[i] == 1 && sleepingWorkers[i] == 0) {
                 this->lastWorker = i;
                 return i;
@@ -48,7 +48,7 @@ struct Emitter : ff_monode_t<Task, Task> {
     }
 
     int getFirstSleeping() {
-        for (int i = this->lastWorkerSleep; i < sleepingWorkers.size(); i++) {
+        for (unsigned int i = this->lastWorkerSleep; i < sleepingWorkers.size(); i++) {
             if (sleepingWorkers[i] == 1) {
                 this->lastWorkerSleep = i;
                 return i;
@@ -79,6 +79,7 @@ struct Emitter : ff_monode_t<Task, Task> {
     }
 
     void setFree(int index) {
+        working--;
         activeWorkers[index] = 1;
     }
 
@@ -86,6 +87,7 @@ struct Emitter : ff_monode_t<Task, Task> {
         task->workingThreads = this->nWorkers;
         setWorking(worker);
         lb->ff_send_out_to(task, worker);
+        working++;
         sent++;
     }
 
@@ -112,11 +114,12 @@ struct Emitter : ff_monode_t<Task, Task> {
 
     Task *svc(Task *in) {
         int wid = lb->get_channel_id();
+
         Task *task = reinterpret_cast<Task *>(in);
 
         // In this case we receive the task from the ExternalEmitter
         // We must send the task to one of the available Workers.
-        if ((size_t)wid == -1) {
+        if ((int)wid == -1) {
             int worker = getFirstActive();
             if (worker == -1) {
                 inputTasks.push_back(task);
@@ -131,8 +134,6 @@ struct Emitter : ff_monode_t<Task, Task> {
             // vector where we store the tasks that we receive from
             // the external emitter that we can't send immediately to one worker.s
             setFree(wid);
-            int toSleep = 0;
-            int wake = 0;
 
             // RISVEGLIARE
             if (task->newWorkingThreads > this->nWorkers) {
@@ -145,10 +146,9 @@ struct Emitter : ff_monode_t<Task, Task> {
                     this->nWorkers = task->newWorkingThreads;
                 }
 
-                int index = 0;
+                unsigned int index = 0;
                 while (sleeping + this->nWorkers != this->maxWorkers && index < sleepingWorkers.size()) {
                     if (sleepingWorkers[index] == 1) {
-                        std::cout << "Wake up" << std::endl;
                         wakeUpWorker(index);
                         toWakeUp--;
                         sleeping--;
@@ -167,7 +167,7 @@ struct Emitter : ff_monode_t<Task, Task> {
                 }
 
                 int index = 0;
-                while (sleeping + this->nWorkers != this->maxWorkers) {
+                while (sleeping + this->nWorkers < this->maxWorkers) {
                     if (sleepingWorkers[index] == 0) {
                         setSleeping(index);
                         toSleep--;
@@ -177,16 +177,24 @@ struct Emitter : ff_monode_t<Task, Task> {
                 }
             }
 
-            int index = getFirstActive();
-            std::cout << "Index " << index << std::endl;
-            if (inputTasks.size() > 0 && index >= 0) {
-                Task *inTask = reinterpret_cast<Task *>(inputTasks.front());
-                inTask->workingThreads = this->nWorkers;
-                sendTask(inTask, index);
-                inputTasks.erase(inputTasks.begin());
+            if (inputTasks.size() > 0) {
+                while (working < this->nWorkers) {
+                    int index = getFirstActive();
+
+                    if (index >= 0) {
+                        Task *inTask = reinterpret_cast<Task *>(inputTasks.front());
+                        inTask->workingThreads = this->nWorkers;
+                        sendTask(inTask, index);
+                        inputTasks.erase(inputTasks.begin());
+                    }
+                }
             }
         }
         if (sent == nTask) {
+            for (int i = 0; i < this->maxWorkers; i++) {
+                wakeUpWorker(i);
+            }
+            broadcast_task(EOS);
             return EOS;
 
         } else {

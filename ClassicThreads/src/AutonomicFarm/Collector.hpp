@@ -39,7 +39,7 @@ class Collector {
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t.workingThreads;
         int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << this->activeWorkers << " new number of workers: " << newNWorker << std::endl;
+        //std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << this->activeWorkers << " new number of workers: " << newNWorker << std::endl;
     }
 
     ///  @brief Constructor method of the Collector component
@@ -65,7 +65,7 @@ class Collector {
     ///  the number of workers
     ///  @return Void
     void start() {
-        std::cout << "Collector avviato" << std::endl;
+        //std::cout << "Collector avviato" << std::endl;
         this->collectorThread = std::thread([=] {
             int counter = 0;
             int c = 0;

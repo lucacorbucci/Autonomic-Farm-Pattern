@@ -62,7 +62,6 @@ class AutonomicFarm {
         // Fill the vector with input task
         std::vector<Task *> inputVector = fillVector(inputSize, n1, n2, n3);
         ExternalEmitter extEm(inputVector);
-        std::cout << "Vector size " << inputVector.size() << std::endl;
         ff_farm farm;
         Collector *c = new Collector(tsGoal);
         Emitter *e = new Emitter(farm.getlb(), nWorker, inputSize);
@@ -91,7 +90,7 @@ class AutonomicFarm {
         std::vector<int> results = c->results;
 
         for (auto item : results) {
-            std::cout << item << std::endl;
+            // std::cout << item << std::endl;
         }
         return 0;
     }

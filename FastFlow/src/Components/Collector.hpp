@@ -23,11 +23,11 @@ struct Collector : ff_minode_t<Task, void> {
     }
 
     void *svc(Task *t) {
-                results.push_back(t->result);
+        results.push_back(t->result);
         return GO_ON;
     }
 
     void svc_end() {
-        printf("Collector ending\n");
+        //printf("Collector ending\n");
     }
 };

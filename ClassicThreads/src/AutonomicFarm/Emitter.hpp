@@ -162,7 +162,7 @@ class Emitter {
     ///  @brief Start the thread of the emitter componentend.
     ///  @return Void
     void start(std::vector<Worker<int, int> *> workQueue) {
-        std::cout << "Emitter avviato" << std::endl;
+        // std::cout << "Emitter avviato" << std::endl;
         this->emitterThread = std::thread([=] {
             threadBody();
         });
