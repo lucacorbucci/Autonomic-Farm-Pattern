@@ -112,11 +112,18 @@ class AutonomicFarm {
         /*
             Get the output from the collector and print it
         */
-        std::vector<int> results = c->results;
+        std::vector<Task *> results = c->results;
 
         for (auto item : results) {
-            // std::cout << item << std::endl;
+            //std::cout << item->result << std::endl;
+            delete (item);
         }
+
+        delete (c);
+        delete (e);
+        for (int i = 0; i < nWorker; i++)
+            delete (w[i]);
+
         return 0;
     }
 };

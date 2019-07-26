@@ -19,7 +19,7 @@ struct Collector : ff_minode_t<Task, void> {
 
    public:
     // In this vector I store the results of the service time
-    std::vector<int> results;
+    std::vector<Task *> results;
 
     ///  @brief Collector's constructor
     Collector(int tsGoal) {
@@ -31,7 +31,7 @@ struct Collector : ff_minode_t<Task, void> {
             The collector receives the task and put the result of the computation
             in the results vector.
         */
-        results.push_back(t->result);
+        results.push_back(t);
         return GO_ON;
     }
 
