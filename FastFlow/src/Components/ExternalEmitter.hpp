@@ -9,6 +9,7 @@
 #include <math.h>
 // clang-format on
 
+///  @brief Implementation of the "external emitter"
 struct ExternalEmitter : ff_node_t<Task, void> {
     std::vector<Task *> inputTasks;
 

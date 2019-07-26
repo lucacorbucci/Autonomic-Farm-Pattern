@@ -68,6 +68,8 @@ class Emitter {
     ///  @details
     ///  This function compute the number of workers that it has to wake up
     ///  and then send a restart signal to the thread.
+    ///  @param
+    ///  @param
     ///  @return Void
     void sendWakeUpSignal(int currentNumWorker, int prevNumWorker) {
         int toWakeUp = currentNumWorker - prevNumWorker;
@@ -129,6 +131,9 @@ class Emitter {
 
         // I have to send the final task with value -1 to stop the workers
         int sent = 0;
+        for (int i = 0; i < maxnWorker; i++) {
+            workerQueue[i]->restartWorker();
+        }
         while (sent < outputQueue.size()) {
             Task task;
             task.value = -1;

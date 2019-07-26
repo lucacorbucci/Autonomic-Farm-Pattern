@@ -15,18 +15,29 @@
 #include <math.h>
 // clang-format on
 
+///  @brief Implementation of the Autonomic Farm Pattern
 class AutonomicFarm {
    private:
+    // Initial (and maximum) number of worker
     int nWorker;
+    // Expected service time
     int tsGoal;
+    // Size of the vector with imput tasks
     int inputSize;
+    // Input of the vector
     int n1;
     int n2;
     int n3;
+    // Function to be computed
     std::function<int(int x)> function;
 
-    std::vector<Task *>
-    fillVector(int inputSize, int n1, int n2, int n3) {
+    ///  @brief Send a sleep signal to a thread
+    ///  @param int Size of the input Vector
+    ///  @param int Integer contained in the first part of the input vector
+    ///  @param int Integer contained in the second part of the input vector
+    ///  @param int Integer contained in the third part of the input vector
+    ///  @return std::vector<Task *> Filled vector
+    std::vector<Task *> fillVector(int inputSize, int n1, int n2, int n3) {
         std::vector<Task *> inputVector;
         inputVector.reserve(inputSize);
         for (int i = 0; i < inputSize; i++) {
@@ -44,6 +55,15 @@ class AutonomicFarm {
     }
 
    public:
+    ///  @brief AutonomicFarm's constructor
+    ///  @param int Initial number of workers
+    ///  @param int Expected service time
+    ///  @param int Size of the input Vector
+    ///  @param int Integer contained in the first part of the input vector
+    ///  @param int Integer contained in the second part of the input vector
+    ///  @param int Integer contained in the third part of the input vector
+    ///  @param fun Function to be computed
+    ///  @return Void
     AutonomicFarm(int nWorker, int tsGoal, int inputSize, int n1, int n2, int n3, std::function<int(int x)> fun) {
         this->nWorker = nWorker;
         this->tsGoal = tsGoal;
@@ -54,7 +74,9 @@ class AutonomicFarm {
         this->function = fun;
     }
 
+    ///  @brief Start the execution of the farm
     int start() {
+        // I create the vector with all the workers
         std::vector<ff_node *> w;
         for (int i = 0; i < nWorker; i++)
             w.push_back(new Worker(this->function, i, tsGoal));
@@ -87,6 +109,9 @@ class AutonomicFarm {
 
         pipe.wait();
 
+        /*
+            Get the output from the collector and print it
+        */
         std::vector<int> results = c->results;
 
         for (auto item : results) {
