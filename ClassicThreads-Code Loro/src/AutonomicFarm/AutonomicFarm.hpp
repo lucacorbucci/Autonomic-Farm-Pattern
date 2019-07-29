@@ -13,6 +13,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <ff/ubuffer.hpp>
+#include <ff/mpmc/MPMCqueues.hpp>
 // clang-format on
 
 using namespace ff;
@@ -23,10 +24,11 @@ template <class T>
 class AutonomicFarm {
    private:
     //std::vector<boost::lockfree::spsc_queue<Task>*> inputQueues;
-    std::vector<uSWSR_Ptr_Buffer*> inputQueues;
-    boost::lockfree::queue<Task*>* outputQueue = new boost::lockfree::queue<Task*>();
+    std::vector<SWSR_Ptr_Buffer*> inputQueues;
+    uMPMC_Ptr_Queue *outputQueue = new uMPMC_Ptr_Queue();
     std::vector<Worker<int, int>*> workerQueue;
-    boost::lockfree::spsc_queue<Feedback>* feedbackQueue;
+    uSWSR_Ptr_Buffer* feedbackQueue;
+    //boost::lockfree::spsc_queue<Feedback>* feedbackQueue;
     std::function<int(int x)> function;
     std::vector<Task*> inputVector;
     int nWorker;
@@ -44,8 +46,12 @@ class AutonomicFarm {
         this->nWorker = nWorker;
         this->function = function;
         this->tsGoal = tsGoal;
-        this->feedbackQueue = new boost::lockfree::spsc_queue<Feedback>{1024 * 1024};
+        this->feedbackQueue = new uSWSR_Ptr_Buffer(1);
+        if (!this->feedbackQueue->init()) {
+                abort;
+        }
         this->inputVector = inputVector;
+        this->outputQueue->init();
     }
 
     ///  @brief This function start the creation of the autonomic farm with its components
@@ -53,7 +59,7 @@ class AutonomicFarm {
     ///  @return Void
     void start() {
         for (int i = 0; i < this->nWorker; i++) {
-            uSWSR_Ptr_Buffer* b = new uSWSR_Ptr_Buffer(10);
+            SWSR_Ptr_Buffer* b = new SWSR_Ptr_Buffer(1);
             if (!b->init()) {
                 abort;
             }

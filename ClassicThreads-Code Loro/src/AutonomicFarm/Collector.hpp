@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/lockfree/queue.hpp>
 #include <ff/ubuffer.hpp>
+#include <ff/mpmc/MPMCqueues.hpp>
 
 // clang-format on
 using namespace ff;
@@ -13,10 +14,11 @@ using namespace ff;
 template <class T>
 class Collector {
    private:
-    boost::lockfree::queue<Task*> *inputQueue;
+    uMPMC_Ptr_Queue *inputQueue;
     std::thread collectorThread;
     std::vector<int> accumulator;
-    boost::lockfree::spsc_queue<Feedback> *feedbackQueue;
+    uSWSR_Ptr_Buffer* feedbackQueue;
+    //boost::lockfree::spsc_queue<Feedback> *feedbackQueue;
     int activeWorkers;
     int tsGoal;
     int maxWorkers;
@@ -37,12 +39,12 @@ class Collector {
 
     ///  @brief Function used to print some useful information
     ///  @param The task popped from the queue
-    void debug(Task t) {
-        std::chrono::duration<double> elapsed = t.endingTime - t.startingTime;
+    void debug(Task *t) {
+        std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-        int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t.workingThreads;
+        int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
         int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        //std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << this->activeWorkers << " new number of workers: " << newNWorker << std::endl;
+        std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << this->activeWorkers << " new number of workers: " << newNWorker << std::endl;
     }
 
     ///  @brief Constructor method of the Collector component
@@ -51,7 +53,7 @@ class Collector {
     ///  @param TsGoal        The expected service time
     ///  @param FeedbackQueue The feedback queue used to send back a feedback to the emitter
    public:
-    Collector(boost::lockfree::queue<Task*> *inputQueue, int activeWorkers, int tsGoal, boost::lockfree::spsc_queue<Feedback> *feedbackQueue) {
+    Collector(uMPMC_Ptr_Queue *inputQueue, int activeWorkers, int tsGoal, uSWSR_Ptr_Buffer *feedbackQueue) {
         this->inputQueue = inputQueue;
         this->activeWorkers = activeWorkers;
         this->maxWorkers = activeWorkers;
@@ -74,22 +76,26 @@ class Collector {
             int c = 0;
             int currentWorkers = this->activeWorkers;
             while (true) {
-                Task t;
+                void *tmpTask;
                 //I have to check if the queue is empty or not.
-                if (inputQueue->pop(t)) {
-                    if (t.value == -1) {
+                if (inputQueue->pop(&tmpTask)) {
+                    Task *t = reinterpret_cast<Task *>(tmpTask);
+
+                    if (t->value == -1) {
                         counter++;
                         if (counter == this->activeWorkers) break;
                     } else {
-                        int newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t.endingTime - t.startingTime).count()) / this->tsGoal);
-                        debug(t);
+                        int newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
+                        //debug(t);
 
                         if (newNWorker != currentWorkers) {
+                            std::cout  <<  "differente" << std::endl;
                             currentWorkers = newNWorker;
                             Feedback f = createFeedback(newNWorker);
-                            this->feedbackQueue->push(f);
+                            this->feedbackQueue->push(&f);
+                            
                         }
-                        accumulator.push_back(t.value);
+                        accumulator.push_back(t->value);
                     }
                 }
             }

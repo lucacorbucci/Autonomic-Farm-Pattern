@@ -13,10 +13,11 @@ using namespace ff;
 template <class T>
 class Emitter {
    private:
-    std::vector<uSWSR_Ptr_Buffer *> outputQueue;
+    std::vector<SWSR_Ptr_Buffer *> outputQueue;
     std::thread emitterThread;
     std::vector<Worker<int, int> *> workerQueue;
-    boost::lockfree::spsc_queue<Feedback> *feedbackQueue;
+    //boost::lockfree::spsc_queue<Feedback> *feedbackQueue;
+    uSWSR_Ptr_Buffer *feedbackQueue;
     std::vector<int> bitVector;
     std::vector<Task*> inputVector;
     int nWorker;
@@ -125,11 +126,19 @@ class Emitter {
 
                 if (outputQueue[index]->push(task)) {
                     i++;
-                    Feedback f;
-                    if (this->feedbackQueue->pop(f)) {
-                        if (f.newNumberOfWorkers != currentNumWorker) {
+                    
+                    void * tmpF;
+                    bool res = this->feedbackQueue->pop(&tmpF);
+                    std::cout  <<  res << std::endl;
+                    if (res) {
+
+                        Feedback *f = reinterpret_cast<Feedback *>(tmpF);
+                        std::cout  <<  "ciao" << std::endl;
+                   
+                        std::cout  <<  f->newNumberOfWorkers << std::endl;
+                        if (f->newNumberOfWorkers != currentNumWorker) {
                             prevNumWorker = currentNumWorker;
-                            currentNumWorker = f.newNumberOfWorkers;
+                            currentNumWorker = f->newNumberOfWorkers;
                             updateWorkers(prevNumWorker, currentNumWorker);
                         }
                     }
@@ -159,7 +168,7 @@ class Emitter {
     ///  @param nWorker        The initial number of active workers
     ///  @param FeedbackQueue  The feedback queue used to send back a feedback to the emitter
     ///  @param inputVector    Input Vector with the tasks that has to be computed
-    Emitter(std::vector<uSWSR_Ptr_Buffer *> outputQueue, std::vector<Worker<int, int> *> workerQueue, int nWorker, boost::lockfree::spsc_queue<Feedback> *feedbackQueue, std::vector<Task*> inputVector) {
+    Emitter(std::vector<SWSR_Ptr_Buffer *> outputQueue, std::vector<Worker<int, int> *> workerQueue, int nWorker, uSWSR_Ptr_Buffer *feedbackQueue, std::vector<Task*> inputVector) {
         this->outputQueue = outputQueue;
         this->workerQueue = workerQueue;
         this->nWorker = nWorker;

@@ -14,6 +14,7 @@
 #include "../Utils/Task.hpp"
 #include "../Utils/Feedback.hpp"
 #include <ff/ubuffer.hpp>
+#include <ff/mpmc/MPMCqueues.hpp>
 
 // clang-format on
 using namespace ff;
@@ -26,8 +27,8 @@ template <class T, class U>
 class Worker {
    private:
     std::function<int(int x)> function;
-    uSWSR_Ptr_Buffer *inputQueue;
-    boost::lockfree::queue<Task*> *outputQueue;
+    SWSR_Ptr_Buffer *inputQueue;
+    uMPMC_Ptr_Queue *outputQueue;
     std::thread *workerThread;
     std::condition_variable *waitCondition;
     std::mutex *d_mutex;
@@ -54,7 +55,7 @@ class Worker {
             if (inputQueue->pop(&tmpTask)) {
                 Task *t = reinterpret_cast<Task *>(tmpTask);
 
-                std::cout << "Worker 2 " << t->value << std::endl;
+                //std::cout << "Worker 2 " << t->value << std::endl;
 
                 //std::cout << "Worker 2 " << t->value << std::endl;
                
@@ -81,7 +82,7 @@ class Worker {
     ///  @param fun          The function to be computed
     ///  @param inputQueue   The queue from which the worker extract the task to be computed
     ///  @param outputQueue  The queue where the worker push the computed task
-    Worker(std::function<int(int x)> fun, uSWSR_Ptr_Buffer *inputQueue, boost::lockfree::queue<Task*> *outputQueue) {
+    Worker(std::function<int(int x)> fun, SWSR_Ptr_Buffer *inputQueue, uMPMC_Ptr_Queue *outputQueue) {
         this->function = fun;
         this->inputQueue = inputQueue;
         this->outputQueue = outputQueue;
