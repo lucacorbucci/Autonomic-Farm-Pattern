@@ -28,7 +28,7 @@ struct Worker : ff_monode_t<Task> {
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
         int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        // std::cout << "Calcolato " << t->value << " Con " << t->workingThreads << " da " << get_my_id() << " in " << elapsedINT << " myTS: " << TS << " Ideal TS " << this->tsGoal << " New NWorkers " << newNWorker << std::endl;
+        //std ::cout << "Calcolato " << t->value << " Con " << t->workingThreads << " da " << get_my_id() << " in " << elapsedINT << " myTS: " << TS << " Ideal TS " << this->tsGoal << " New NWorkers " << newNWorker << std::endl;
 
         t->newWorkingThreads = newNWorker;
     }
@@ -63,6 +63,6 @@ struct Worker : ff_monode_t<Task> {
     }
 
     void svc_end() {
-        //std::cout << "Going to sleep " << get_my_id() << std::endl;
+        // std::cout << "Going to sleep " << get_my_id() << std::endl;
     }
 };

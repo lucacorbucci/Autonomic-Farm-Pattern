@@ -37,7 +37,8 @@ struct Emitter : ff_monode_t<Task, Task> {
 
     ///  @brief This function return the index of first active worker
     ///  @return The index of the first active worker
-    int getFirstActive() {
+    int
+    getFirstActive() {
         for (unsigned int i = this->lastWorker; i < activeWorkers.size(); i++) {
             if (activeWorkers[i] == 1 && sleepingWorkers[i] == 0) {
                 this->lastWorker = i;
@@ -175,13 +176,14 @@ struct Emitter : ff_monode_t<Task, Task> {
         this->lastWorker = get_num_outchannels();
         return 0;
     }
+    bool finish = false;
 
     Task *svc(Task *in) {
         int wid = lb->get_channel_id();
 
         Task *task = reinterpret_cast<Task *>(in);
 
-        /*
+        /*  
             In this case we receive the task from the ExternalEmitter
             We must send the task to one of the available Workers.
          */
@@ -194,8 +196,9 @@ struct Emitter : ff_monode_t<Task, Task> {
                 sendTask(task, worker);
             }
         }
+
         // In this case we received the feedback from one of the workers
-        else if ((size_t)wid < get_num_outchannels()) {
+        if ((size_t)wid < get_num_outchannels()) {
             setFree(wid);
 
             // wake up one or more worker based on the information of the feedback
@@ -236,8 +239,9 @@ struct Emitter : ff_monode_t<Task, Task> {
             */
             for (int i = 0; i < this->maxWorkers; i++) {
                 wakeUpWorker(i);
+                //std::cout << "wake up " << i << std::endl;
             }
-            broadcast_task(EOS);
+            lb->broadcast_task(EOS);
             return EOS;
         } else {
             return GO_ON;
