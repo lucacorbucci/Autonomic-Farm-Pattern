@@ -9,16 +9,16 @@
 using namespace ff;
 
 ///  @brief Implementation of the Emitter of the autonomic farm
-template <class T>
+template <class T, class U>
 class Emitter {
    private:
     std::vector<SWSR_Ptr_Buffer *> outputQueue;
     std::thread emitterThread;
-    std::vector<Worker<int, int> *> workerQueue;
+    std::vector<Worker<T, U> *> workerQueue;
     //boost::lockfree::spsc_queue<Feedback> *feedbackQueue;
     uSWSR_Ptr_Buffer *feedbackQueue;
     std::vector<int> bitVector;
-    std::vector<Task *> inputVector;
+    std::vector<Task<T, U> *> inputVector;
     int nWorker;
     int maxnWorker;
 
@@ -110,7 +110,7 @@ class Emitter {
     void threadBody() {
         int i = 0, index = 0, currentNumWorker = this->nWorker, prevNumWorker = this->nWorker, dst = 0;
         while (i < inputVector.size()) {
-            Task *task = inputVector.at(i);
+            Task<T, U> *task = inputVector.at(i);
             task->workingThreads = currentNumWorker;
 
             index = mod(dst, outputQueue.size());
@@ -119,7 +119,7 @@ class Emitter {
             if (workerQueue[index]->isActive()) {
                 void *taskVoid = task;
 
-                Task *t = (Task *)taskVoid;
+                Task<T, U> *t = (Task<T, U> *)taskVoid;
 
                 if (outputQueue[index]->push(task)) {
                     i++;
@@ -150,8 +150,8 @@ class Emitter {
         }
 
         while (sent < outputQueue.size()) {
-            Task *task = new Task();
-            task->value = -1;
+            Task<T, U> *task = new Task<T, U>();
+            task->end = -1;
             if (outputQueue[sent]->push(task)) {
                 sent++;
             }
@@ -165,7 +165,7 @@ class Emitter {
     ///  @param nWorker        The initial number of active workers
     ///  @param FeedbackQueue  The feedback queue used to send back a feedback to the emitter
     ///  @param inputVector    Input Vector with the tasks that has to be computed
-    Emitter(std::vector<SWSR_Ptr_Buffer *> outputQueue, std::vector<Worker<int, int> *> workerQueue, int nWorker, uSWSR_Ptr_Buffer *feedbackQueue, std::vector<Task *> inputVector) {
+    Emitter(std::vector<SWSR_Ptr_Buffer *> outputQueue, std::vector<Worker<T, U> *> workerQueue, int nWorker, uSWSR_Ptr_Buffer *feedbackQueue, std::vector<Task<T, U> *> inputVector) {
         this->outputQueue = outputQueue;
         this->workerQueue = workerQueue;
         this->nWorker = nWorker;
@@ -180,7 +180,7 @@ class Emitter {
 
     ///  @brief Start the thread of the emitter componentend.
     ///  @return Void
-    void start(std::vector<Worker<int, int> *> workQueue) {
+    void start(std::vector<Worker<T, U> *> workQueue) {
         // std::cout << "Emitter avviato" << std::endl;
         this->emitterThread = std::thread([=] {
             threadBody();

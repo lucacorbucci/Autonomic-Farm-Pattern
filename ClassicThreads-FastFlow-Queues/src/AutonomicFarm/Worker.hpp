@@ -24,7 +24,7 @@ using namespace ff;
 template <class T, class U>
 class Worker {
    private:
-    std::function<int(int x)> function;
+    std::function<T(U x)> function;
     SWSR_Ptr_Buffer *inputQueue;
     uMPMC_Ptr_Queue *outputQueue;
     std::thread *workerThread;
@@ -41,7 +41,7 @@ class Worker {
     }
 
     ///  @brief Debug function used to print some useful informations
-    void debug(Task *t) {
+    void debug(Task<T, U> *t) {
         std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         std::cout << "elapsed " << elapsedINT << " current number of workers " << t->workingThreads << " current worker " << std::this_thread::get_id() << std::endl;
@@ -59,14 +59,14 @@ class Worker {
         void *tmpTask;
         if (!inputQueue->empty()) {
             if (inputQueue->pop(&tmpTask)) {
-                Task *t = reinterpret_cast<Task *>(tmpTask);
+                Task<T, U> *t = reinterpret_cast<Task<T, U> *>(tmpTask);
 
                 t->startingTime = std::chrono::high_resolution_clock::now();
-                if (t->value == -1) {
+                if (t->end == -1) {
                     outputQueue->push(t);
                     return -1;
                 } else {
-                    this->function(t->value);
+                    t->result = this->function(t->value);
                     t->endingTime = std::chrono::high_resolution_clock::now();
                     //debug(t);
                     outputQueue->push(t);
@@ -82,7 +82,7 @@ class Worker {
     ///  @param fun          The function to be computed
     ///  @param inputQueue   The queue from which the worker extract the task to be computed
     ///  @param outputQueue  The queue where the worker push the computed task
-    Worker(int ID, std::function<int(int x)> fun, SWSR_Ptr_Buffer *inputQueue, uMPMC_Ptr_Queue *outputQueue) {
+    Worker(int ID, std::function<T(U x)> fun, SWSR_Ptr_Buffer *inputQueue, uMPMC_Ptr_Queue *outputQueue) {
         this->function = fun;
         this->inputQueue = inputQueue;
         this->outputQueue = outputQueue;

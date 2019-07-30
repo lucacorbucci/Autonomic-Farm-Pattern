@@ -10,12 +10,12 @@
 using namespace ff;
 
 ///  @brief Implementation of the collector of the autonomic farm
-template <class T>
+template <class T, class U>
 class Collector {
    private:
     uMPMC_Ptr_Queue *inputQueue;
     std::thread collectorThread;
-    std::vector<int> accumulator;
+    std::vector<U> accumulator;
     uSWSR_Ptr_Buffer *feedbackQueue;
     //boost::lockfree::spsc_queue<Feedback> *feedbackQueue;
     int activeWorkers;
@@ -38,7 +38,7 @@ class Collector {
 
     ///  @brief Function used to print some useful information
     ///  @param The task popped from the queue
-    void debug(Task *t) {
+    void debug(Task<T, U> *t) {
         std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
@@ -78,26 +78,26 @@ class Collector {
                 void *tmpTask;
                 //I have to check if the queue is empty or not.
                 if (inputQueue->pop(&tmpTask)) {
-                    Task *t = reinterpret_cast<Task *>(tmpTask);
+                    Task<T, U> *t = reinterpret_cast<Task<T, U> *>(tmpTask);
 
-                    if (t->value == -1) {
+                    if (t->end == -1) {
                         counter++;
                         if (counter == this->activeWorkers) break;
                     } else {
                         int newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
-                        //debug(t);
+                        debug(t);
 
                         if (newNWorker != currentWorkers) {
                             currentWorkers = newNWorker;
                             Feedback f = createFeedback(newNWorker);
                             this->feedbackQueue->push(&f);
                         }
-                        accumulator.push_back(t->value);
+                        accumulator.push_back(t->result);
                     }
                 }
             }
-            for (int x : accumulator) {
-                //std::cout << x << std::endl;
+            for (U x : accumulator) {
+                std::cout << x << std::endl;
             }
         });
     }

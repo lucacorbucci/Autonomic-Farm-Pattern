@@ -3,10 +3,12 @@
 // clang-format on
 
 /// @brief Task structure
+template <typename T, typename U>
 struct Task {
     /// @brief Input value of the function to be computed
-    int value;
-    int *x;
+    U value;
+    int end;
+    T result;
     /// @brief Number of currently active threads
     int workingThreads;
     /// @brief Starting time of the task

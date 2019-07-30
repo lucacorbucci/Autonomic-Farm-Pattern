@@ -2,7 +2,7 @@
 # FF_ROOT     points to the FastFlow root directory (i.e.
 #             the one containing the ff directory).
 ifndef FF_ROOT
-FF_ROOT		= ../Lib/FastFlow
+FF_ROOT		= ../../Lib/FastFlow
 endif
 
 CXX		= g++ -std=c++17 #-DNO_DEFAULT_MAPPING

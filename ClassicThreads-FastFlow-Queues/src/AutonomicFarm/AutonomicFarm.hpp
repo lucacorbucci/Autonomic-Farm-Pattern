@@ -18,17 +18,17 @@ using namespace ff;
 
 ///  @brief Implementation of the Autonomic Farm Pattern
 
-template <class T>
+template <class T, class U>
 class AutonomicFarm {
    private:
     //std::vector<boost::lockfree::spsc_queue<Task>*> inputQueues;
     std::vector<SWSR_Ptr_Buffer*> inputQueues;
     uMPMC_Ptr_Queue* outputQueue = new uMPMC_Ptr_Queue();
-    std::vector<Worker<int, int>*> workerQueue;
+    std::vector<Worker<T, U>*> workerQueue;
     uSWSR_Ptr_Buffer* feedbackQueue;
     //boost::lockfree::spsc_queue<Feedback>* feedbackQueue;
-    std::function<int(int x)> function;
-    std::vector<Task*> inputVector;
+    std::function<T(U x)> function;
+    std::vector<Task<T, U>*> inputVector;
     int nWorker;
     int tsGoal;
 
@@ -40,7 +40,7 @@ class AutonomicFarm {
     ///  @param inputVector Input Vector with the tasks that has to be computed
     ///
    public:
-    AutonomicFarm(int nWorker, std::function<int(int x)> function, int tsGoal, std::vector<Task*> inputVector) {
+    AutonomicFarm(int nWorker, std::function<T(U x)> function, int tsGoal, std::vector<Task<T, U>*> inputVector) {
         this->nWorker = nWorker;
         this->function = function;
         this->tsGoal = tsGoal;
@@ -65,10 +65,10 @@ class AutonomicFarm {
         }
 
         for (int i = 0; i < this->nWorker; i++) {
-            this->workerQueue.push_back(new Worker<int, int>{i, this->function, this->inputQueues[i], this->outputQueue});
+            this->workerQueue.push_back(new Worker<T, U>{i, this->function, this->inputQueues[i], this->outputQueue});
         }
 
-        Emitter<int> e{this->inputQueues, workerQueue, nWorker, this->feedbackQueue, this->inputVector};
+        Emitter<T, U> e{this->inputQueues, workerQueue, nWorker, this->feedbackQueue, this->inputVector};
 
         for (int i = 0; i < this->nWorker; i++) {
             this->workerQueue[i]->start();
@@ -76,7 +76,7 @@ class AutonomicFarm {
 
         e.start(workerQueue);
 
-        Collector<int> c{this->outputQueue, this->nWorker, this->tsGoal, this->feedbackQueue};
+        Collector<T, U> c{this->outputQueue, this->nWorker, this->tsGoal, this->feedbackQueue};
         c.start();
 
         for (int i = 0; i < this->nWorker; i++) {
