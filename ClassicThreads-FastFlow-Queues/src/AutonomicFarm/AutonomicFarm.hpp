@@ -3,8 +3,6 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#include <boost/lockfree/spsc_queue.hpp>
-#include <boost/lockfree/queue.hpp>
 #include "Worker.hpp"
 #include "Emitter.hpp"
 #include "Collector.hpp"
@@ -25,7 +23,7 @@ class AutonomicFarm {
    private:
     //std::vector<boost::lockfree::spsc_queue<Task>*> inputQueues;
     std::vector<SWSR_Ptr_Buffer*> inputQueues;
-    uMPMC_Ptr_Queue *outputQueue = new uMPMC_Ptr_Queue();
+    uMPMC_Ptr_Queue* outputQueue = new uMPMC_Ptr_Queue();
     std::vector<Worker<int, int>*> workerQueue;
     uSWSR_Ptr_Buffer* feedbackQueue;
     //boost::lockfree::spsc_queue<Feedback>* feedbackQueue;
@@ -48,7 +46,7 @@ class AutonomicFarm {
         this->tsGoal = tsGoal;
         this->feedbackQueue = new uSWSR_Ptr_Buffer(1);
         if (!this->feedbackQueue->init()) {
-                abort;
+            abort;
         }
         this->inputVector = inputVector;
         this->outputQueue->init();
@@ -67,7 +65,7 @@ class AutonomicFarm {
         }
 
         for (int i = 0; i < this->nWorker; i++) {
-            this->workerQueue.push_back(new Worker<int, int>{this->function, this->inputQueues[i], this->outputQueue});
+            this->workerQueue.push_back(new Worker<int, int>{i, this->function, this->inputQueues[i], this->outputQueue});
         }
 
         Emitter<int> e{this->inputQueues, workerQueue, nWorker, this->feedbackQueue, this->inputVector};

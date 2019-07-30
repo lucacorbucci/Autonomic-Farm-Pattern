@@ -9,8 +9,6 @@
 #include <vector>
 #include <condition_variable>
 #include <math.h>
-#include <boost/lockfree/spsc_queue.hpp>
-#include <boost/lockfree/queue.hpp>
 #include "../Utils/Task.hpp"
 #include "../Utils/Feedback.hpp"
 #include <ff/ubuffer.hpp>
@@ -31,14 +29,22 @@ class Worker {
     uMPMC_Ptr_Queue *outputQueue;
     std::thread *workerThread;
     std::condition_variable *waitCondition;
-    std::mutex *d_mutex;
-    std::unique_lock<std::mutex> *lock;
+    std::mutex *d_mutex = new std::mutex();
+    std::unique_lock<std::mutex> *lock = new std::unique_lock<std::mutex>(*d_mutex);
     bool status = true;
+    int ID;
 
     ///  @brief Put this thread in sleep
     ///  @return Void
     void sleep() {
         this->waitCondition->wait(*lock);
+    }
+
+    ///  @brief Debug function used to print some useful informations
+    void debug(Task *t) {
+        std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
+        int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+        std::cout << "elapsed " << elapsedINT << " current number of workers " << t->workingThreads << " current worker " << std::this_thread::get_id() << std::endl;
     }
 
     ///  @brief Wake up a sleeping worker
@@ -55,23 +61,17 @@ class Worker {
             if (inputQueue->pop(&tmpTask)) {
                 Task *t = reinterpret_cast<Task *>(tmpTask);
 
-                //std::cout << "Worker 2 " << t->value << std::endl;
-
-                //std::cout << "Worker 2 " << t->value << std::endl;
-               
-                
                 t->startingTime = std::chrono::high_resolution_clock::now();
                 if (t->value == -1) {
                     outputQueue->push(t);
                     return -1;
                 } else {
-                    //std::cout << std::this_thread::get_id() << std::endl;
-                   // std::cout << t.value << std::endl;
-
                     this->function(t->value);
                     t->endingTime = std::chrono::high_resolution_clock::now();
+                    //debug(t);
                     outputQueue->push(t);
-                } 
+                    return 1;
+                }
             }
         }
         return 0;
@@ -82,14 +82,13 @@ class Worker {
     ///  @param fun          The function to be computed
     ///  @param inputQueue   The queue from which the worker extract the task to be computed
     ///  @param outputQueue  The queue where the worker push the computed task
-    Worker(std::function<int(int x)> fun, SWSR_Ptr_Buffer *inputQueue, uMPMC_Ptr_Queue *outputQueue) {
+    Worker(int ID, std::function<int(int x)> fun, SWSR_Ptr_Buffer *inputQueue, uMPMC_Ptr_Queue *outputQueue) {
         this->function = fun;
         this->inputQueue = inputQueue;
         this->outputQueue = outputQueue;
-        d_mutex = new std::mutex();
-        lock = new std::unique_lock<std::mutex>(*d_mutex);
         waitCondition = new std::condition_variable();
         this->status = true;
+        this->ID = ID;
     }
 
     ///  @brief This function starts the Worker and computes the task
@@ -97,13 +96,12 @@ class Worker {
     void start() {
         //std::cout << "worker avviato" << std::endl;
         this->workerThread = new std::thread([=] {
-            while (true) {
-                if (compute() == -1) break;
-                if (!isActive()) {
-                    // I empty the queue before going to sleep
-                    if (compute() == -1) break;
+            int exit = 0;
+            while (compute() != -1) {
+                while (!isActive()) {
                     sleep();
                 }
+                if (exit == 1) break;
             }
         });
     }
@@ -132,5 +130,9 @@ class Worker {
     ///  @return Void
     void join() {
         this->workerThread->join();
+    }
+
+    int printID() {
+        return this->ID;
     }
 };

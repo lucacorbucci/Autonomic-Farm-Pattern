@@ -82,11 +82,8 @@ class Worker {
     void start() {
         //std::cout << "worker avviato" << std::endl;
         this->workerThread = new std::thread([=] {
-            while (true) {
-                if (compute() == -1) break;
-                if (!isActive()) {
-                    // I empty the queue before going to sleep
-                    if (compute() == -1) break;
+            while (compute() != -1) {
+                while (!isActive()) {
                     sleep();
                 }
             }

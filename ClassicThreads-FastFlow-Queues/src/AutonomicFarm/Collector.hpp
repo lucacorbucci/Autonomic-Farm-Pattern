@@ -3,7 +3,6 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#include <boost/lockfree/queue.hpp>
 #include <ff/ubuffer.hpp>
 #include <ff/mpmc/MPMCqueues.hpp>
 
@@ -17,7 +16,7 @@ class Collector {
     uMPMC_Ptr_Queue *inputQueue;
     std::thread collectorThread;
     std::vector<int> accumulator;
-    uSWSR_Ptr_Buffer* feedbackQueue;
+    uSWSR_Ptr_Buffer *feedbackQueue;
     //boost::lockfree::spsc_queue<Feedback> *feedbackQueue;
     int activeWorkers;
     int tsGoal;
@@ -44,7 +43,7 @@ class Collector {
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
         int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << this->activeWorkers << " new number of workers: " << newNWorker << std::endl;
+        std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << t->workingThreads << " new number of workers: " << newNWorker << std::endl;
     }
 
     ///  @brief Constructor method of the Collector component
@@ -89,18 +88,16 @@ class Collector {
                         //debug(t);
 
                         if (newNWorker != currentWorkers) {
-                            std::cout  <<  "differente" << std::endl;
                             currentWorkers = newNWorker;
                             Feedback f = createFeedback(newNWorker);
                             this->feedbackQueue->push(&f);
-                            
                         }
                         accumulator.push_back(t->value);
                     }
                 }
             }
             for (int x : accumulator) {
-                std::cout << x << std::endl;
+                //std::cout << x << std::endl;
             }
         });
     }

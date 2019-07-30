@@ -3,7 +3,6 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#include <boost/lockfree/spsc_queue.hpp>
 #include <ff/ubuffer.hpp>
 
 // clang-format on
@@ -19,7 +18,7 @@ class Emitter {
     //boost::lockfree::spsc_queue<Feedback> *feedbackQueue;
     uSWSR_Ptr_Buffer *feedbackQueue;
     std::vector<int> bitVector;
-    std::vector<Task*> inputVector;
+    std::vector<Task *> inputVector;
     int nWorker;
     int maxnWorker;
 
@@ -60,9 +59,7 @@ class Emitter {
 
             if (index != -1) {
                 bitVector[index] = 0;
-                if (workerQueue[index]->stopWorker() == false) {
-                    ;
-                }
+                workerQueue[index]->stopWorker();
             }
             j++;
         }
@@ -122,20 +119,17 @@ class Emitter {
             if (workerQueue[index]->isActive()) {
                 void *taskVoid = task;
 
-                Task * t = (Task *) taskVoid;
+                Task *t = (Task *)taskVoid;
 
                 if (outputQueue[index]->push(task)) {
                     i++;
-                    
-                    void * tmpF;
-                    bool res = this->feedbackQueue->pop(&tmpF);
-                    std::cout  <<  res << std::endl;
-                    if (res) {
 
+                    void *tmpF;
+                    bool res = this->feedbackQueue->pop(&tmpF);
+                    //std::cout  <<  res << std::endl;
+                    if (res) {
                         Feedback *f = reinterpret_cast<Feedback *>(tmpF);
-                        std::cout  <<  "ciao" << std::endl;
-                   
-                        std::cout  <<  f->newNumberOfWorkers << std::endl;
+
                         if (f->newNumberOfWorkers != currentNumWorker) {
                             prevNumWorker = currentNumWorker;
                             currentNumWorker = f->newNumberOfWorkers;
@@ -148,13 +142,16 @@ class Emitter {
 
         // I have to send the final task with value -1 to stop the workers
         int sent = 0;
-        for (int i = 0; i < maxnWorker; i++) {
-            workerQueue[i]->restartWorker();
+        int d = getFirstSleeping();
+        while (d != -1) {
+            workerQueue[d]->restartWorker();
+            bitVector[d] = 1;
+            d = getFirstSleeping();
         }
+
         while (sent < outputQueue.size()) {
             Task *task = new Task();
             task->value = -1;
-            task->workingThreads = this->nWorker;
             if (outputQueue[sent]->push(task)) {
                 sent++;
             }
@@ -168,7 +165,7 @@ class Emitter {
     ///  @param nWorker        The initial number of active workers
     ///  @param FeedbackQueue  The feedback queue used to send back a feedback to the emitter
     ///  @param inputVector    Input Vector with the tasks that has to be computed
-    Emitter(std::vector<SWSR_Ptr_Buffer *> outputQueue, std::vector<Worker<int, int> *> workerQueue, int nWorker, uSWSR_Ptr_Buffer *feedbackQueue, std::vector<Task*> inputVector) {
+    Emitter(std::vector<SWSR_Ptr_Buffer *> outputQueue, std::vector<Worker<int, int> *> workerQueue, int nWorker, uSWSR_Ptr_Buffer *feedbackQueue, std::vector<Task *> inputVector) {
         this->outputQueue = outputQueue;
         this->workerQueue = workerQueue;
         this->nWorker = nWorker;
