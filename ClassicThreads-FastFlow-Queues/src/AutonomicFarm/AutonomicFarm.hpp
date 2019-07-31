@@ -5,7 +5,7 @@
 #include <vector>
 #include "Worker.hpp"
 #include "Emitter.hpp"
-#include "Collector.hpp"
+//#include "Collector.hpp"
 #include <mutex>
 #include <chrono>
 #include <condition_variable>
@@ -66,7 +66,7 @@ class AutonomicFarm {
         }
 
         for (int i = 0; i < this->nWorker; i++) {
-            this->workerQueue.push_back(new Worker<T, U>{i, this->function, this->inputQueues[i], this->outputQueue});
+            this->workerQueue.push_back(new Worker<T, U>{i, this->function, this->inputQueues[i], this->outputQueue, this->feedbackQueue, this->nWorker, this->tsGoal});
         }
 
         Emitter<T, U> e{this->inputQueues, workerQueue, nWorker, this->feedbackQueue, this->inputVector};
@@ -77,14 +77,11 @@ class AutonomicFarm {
 
         e.start(workerQueue);
 
-        Collector<T, U> c{this->outputQueue, this->nWorker, this->tsGoal, this->feedbackQueue};
-        c.start();
-
         for (int i = 0; i < this->nWorker; i++) {
             this->workerQueue[i]->join();
         }
 
         e.join();
-        c.join();
+        //c.join();
     }
 };

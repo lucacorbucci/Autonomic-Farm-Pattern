@@ -36,8 +36,12 @@ class Worker {
     std::unique_lock<std::mutex> *lock = new std::unique_lock<std::mutex>(*d_mutex);
     bool status = true;
     int ID;
+    int currentWorkers;
+    int tsGoal;
+    int maxWorkers;
+    std::vector<T> accumulator;
 
-    
+    uSWSR_Ptr_Buffer *feedbackQueue;
 
     ///  @brief Put this thread in sleep
     ///  @return Void
@@ -49,7 +53,21 @@ class Worker {
     void debug(Task<T, U> *t) {
         std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-        std::cout << "elapsed " << elapsedINT << " current number of workers " << t->workingThreads << " current worker " << std::this_thread::get_id() << std::endl;
+        int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
+        int newNWorker = round(float(elapsedINT) / this->tsGoal);
+        std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << t->workingThreads << " new number of workers: " << newNWorker << std::endl;
+    }
+
+    Feedback createFeedback(int newNWorker) {
+        Feedback f;
+        if (newNWorker == 0) {
+            f.newNumberOfWorkers = 1;
+        } else if (newNWorker > this->maxWorkers) {
+            f.newNumberOfWorkers = this->maxWorkers;
+        } else {
+            f.newNumberOfWorkers = newNWorker;
+        }
+        return f;
     }
 
     ///  @brief Wake up a sleeping worker
@@ -68,13 +86,22 @@ class Worker {
 
                 t->startingTime = std::chrono::high_resolution_clock::now();
                 if (t->end == -1) {
-                    outputQueue->push(t);
+                    // outputQueue->push(t);
                     return -1;
                 } else {
                     t->result = this->function(t->value);
                     t->endingTime = std::chrono::high_resolution_clock::now();
-                    //debug(t);
-                    outputQueue->push(t);
+                    accumulator.push_back(t->result);
+                    //outputQueue->push(t);
+
+                    int newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
+                    debug(t);
+
+                    if (newNWorker != currentWorkers) {
+                        currentWorkers = newNWorker;
+                        Feedback f = createFeedback(newNWorker);
+                        this->feedbackQueue->push(&f);
+                    }
                     return 1;
                 }
             }
@@ -87,13 +114,17 @@ class Worker {
     ///  @param fun          The function to be computed
     ///  @param inputQueue   The queue from which the worker extract the task to be computed
     ///  @param outputQueue  The queue where the worker push the computed task
-    Worker(int ID, std::function<T(U x)> fun, SWSR_Ptr_Buffer *inputQueue, uMPMC_Ptr_Queue *outputQueue) {
+    Worker(int ID, std::function<T(U x)> fun, SWSR_Ptr_Buffer *inputQueue, uMPMC_Ptr_Queue *outputQueue, uSWSR_Ptr_Buffer *feedbackQueue, int activeWorkers, int tsGoal) {
         this->function = fun;
         this->inputQueue = inputQueue;
         this->outputQueue = outputQueue;
         waitCondition = new std::condition_variable();
         this->status = true;
         this->ID = ID;
+        this->feedbackQueue = feedbackQueue;
+        this->currentWorkers = activeWorkers;
+        this->tsGoal = tsGoal;
+        this->maxWorkers = activeWorkers;
     }
 
     ///  @brief This function starts the Worker and computes the task
@@ -107,6 +138,9 @@ class Worker {
                     sleep();
                 }
                 if (exit == 1) break;
+            }
+            for (T x : accumulator) {
+                std::cout << x << std::endl;
             }
         });
     }
