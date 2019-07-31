@@ -12,27 +12,28 @@
 using namespace ff;
 
 ///  @brief Implementation of the collector of the Autonomic Farm
-struct Collector : ff_minode_t<Task, void> {
+template <typename T, typename U>
+struct Collector : ff_minode_t<Task<T, U>, void> {
    private:
     // Expected service time
     int tsGoal;
 
    public:
     // In this vector I store the results of the service time
-    std::vector<Task *> results;
+    std::vector<Task<T, U> *> results;
 
     ///  @brief Collector's constructor
     Collector(int tsGoal) {
         this->tsGoal = tsGoal;
     }
 
-    void *svc(Task *t) {
+    void *svc(Task<T, U> *t) {
         /*
             The collector receives the task and put the result of the computation
             in the results vector.
         */
         results.push_back(t);
-        return GO_ON;
+        return this->GO_ON;
     }
 
     void svc_end() {

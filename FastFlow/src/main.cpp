@@ -17,18 +17,23 @@ int fib(int x) {
     }
 }
 
-int main(int argc, char *argv[]) {
+bool isPalindrome(const char* s) {
+    size_t n = strlen(s);
+    if (n == 0)
+        return false;
+
+    const char* e = s + n - 1;
+    while (s < e)
+        if (*s++ != *e--)
+            return false;
+    return true;
+}
+
+int main(int argc, char* argv[]) {
     if (argc >= 6) {
-        int nWorker = atoi(argv[1]);
-        int tsGoal = atoi(argv[2]);
-        int inputSize = atoi(argv[3]);
-        int input1 = atoi(argv[4]);
-        int input2 = atoi(argv[5]);
-        int input3 = atoi(argv[6]);
-
-        AutonomicFarm af{nWorker, tsGoal, inputSize, input1, input2, input3, fib};
+        AutonomicFarm<int, int> af{atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), fib};
+        //AutonomicFarm<bool, const char*> af{atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), argv[4], argv[5], argv[6], isPalindrome};
         af.start();
-
     } else {
         std::cout << argv[0] << " Usage: nWorker, tsGoal" << std::endl;
     }

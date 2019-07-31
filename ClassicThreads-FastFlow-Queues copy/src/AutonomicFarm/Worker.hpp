@@ -43,14 +43,11 @@ class Worker {
     int ID;
     /// @brief Number of workers currently active
     int currentWorkers;
-    /// @brief Expected TS
-    int tsGoal;
     /// @brief Maximum number of workers
     int maxWorkers;
     /// @brief Vector used to store all the final results of the function to be computed
     std::vector<T> accumulator;
-    /// @brief Feedback queue (from worker to emitter)
-    uSWSR_Ptr_Buffer *feedbackQueue;
+    uMPMC_Ptr_Queue *outputQueue;
 
     ///  @brief Put this thread in sleep
     ///  @return Void
@@ -68,27 +65,6 @@ class Worker {
         std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << t->workingThreads << " new number of workers: " << newNWorker << std::endl;
     }
 
-    ///  @brief Create a Feedback that the worker will send to the emitter
-    ///  @detail I have to check if the new number of workers is 0 or is more thatn
-    ///  the maximum number of workers. In the first case i set 1 as the number of
-    ///  workers that i want to mantain active, in the second case i set maxWorkers
-    ///  as the number of workers that i want to mantain active
-    ///  @param int          New number of workers
-    ///  @return Feedback
-    Feedback createFeedback(int newNWorker) {
-        Feedback f;
-
-        if (newNWorker == 0) {
-            f.newNumberOfWorkers = 1;
-        } else if (newNWorker > this->maxWorkers) {
-            f.newNumberOfWorkers = this->maxWorkers;
-        } else {
-            f.newNumberOfWorkers = newNWorker;
-        }
-        f.senderID = this->ID;
-        return f;
-    }
-
     ///  @brief Wake up a sleeping worker
     ///  @details
     ///  This function pop an item from the input queue.
@@ -104,21 +80,12 @@ class Worker {
 
                 t->startingTime = std::chrono::high_resolution_clock::now();
                 if (t->end == -1) {
+                    outputQueue->push(t);
                     return -1;
                 } else {
                     t->result = this->function(t->value);
                     t->endingTime = std::chrono::high_resolution_clock::now();
-                    accumulator.push_back(t->result);
-
-                    int newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
-                    //debug(t);
-
-                    if (newNWorker != currentWorkers) {
-                        currentWorkers = newNWorker;
-                    }
-                    Feedback f = createFeedback(newNWorker);
-                    this->feedbackQueue->push(&f);
-
+                    outputQueue->push(t);
                     return 1;
                 }
             }
@@ -134,16 +101,14 @@ class Worker {
     ///  @param uSWSR_Ptr_Buffer  Feedback Queue
     ///  @param int               activeWorkers
     ///  @param int               tsGoal
-    Worker(int ID, std::function<T(U x)> fun, SWSR_Ptr_Buffer *inputQueue, uSWSR_Ptr_Buffer *feedbackQueue, int activeWorkers, int tsGoal) {
+    Worker(int ID, std::function<T(U x)> fun, SWSR_Ptr_Buffer *inputQueue, uMPMC_Ptr_Queue *outputQueue) {
         this->function = fun;
         this->inputQueue = inputQueue;
         waitCondition = new std::condition_variable();
         this->status = true;
         this->ID = ID;
-        this->feedbackQueue = feedbackQueue;
-        this->currentWorkers = activeWorkers;
-        this->tsGoal = tsGoal;
         this->maxWorkers = activeWorkers;
+        this->outputQueue = outputQueue;
     }
 
     ///  @brief This function starts the Worker and computes the task

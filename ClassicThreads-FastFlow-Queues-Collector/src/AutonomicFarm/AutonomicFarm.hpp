@@ -5,6 +5,7 @@
 #include <vector>
 #include "Worker.hpp"
 #include "Emitter.hpp"
+#include "Collector.hpp"
 #include <mutex>
 #include <chrono>
 #include <condition_variable>
@@ -22,19 +23,13 @@ using namespace ff;
 template <typename T, typename U>
 class AutonomicFarm {
    private:
-    ///  @brief Vector of queues used to send tasks from the emitter to the workers
     std::vector<SWSR_Ptr_Buffer*> inputQueues;
-    ///  @brief Vector of workers
+    uMPMC_Ptr_Queue* outputQueue = new uMPMC_Ptr_Queue();
     std::vector<Worker<T, U>*> workerQueue;
-    ///  @brief Feedback queue used to send feedback from worker to sender
     uSWSR_Ptr_Buffer* feedbackQueue;
-    ///  @brief The function to be computed by the worker
     std::function<T(U x)> function;
-    ///  @brief Vector with input data
     std::vector<Task<T, U>*> inputVector;
-    ///  @brief Number of workers
     int nWorker;
-    ///  @brief Expected Ts
     int tsGoal;
 
     ///  @brief Constructor method of the AutonomicFarm Class
@@ -55,6 +50,7 @@ class AutonomicFarm {
             abort;
         }
         this->inputVector = inputVector;
+        this->outputQueue->init();
     }
 
     ///  @brief This function start the creation of the autonomic farm with its components
@@ -69,26 +65,26 @@ class AutonomicFarm {
             inputQueues.push_back(b);
         }
 
-        // Fill the worker queue
         for (int i = 0; i < this->nWorker; i++) {
-            this->workerQueue.push_back(new Worker<T, U>{i, this->function, this->inputQueues[i], this->feedbackQueue, this->nWorker, this->tsGoal});
+            this->workerQueue.push_back(new Worker<T, U>{i, this->function, this->inputQueues[i], this->outputQueue});
         }
 
-        // Create the emitter
         Emitter<T, U> e{this->inputQueues, workerQueue, nWorker, this->feedbackQueue, this->inputVector};
 
-        // Start the workers
         for (int i = 0; i < this->nWorker; i++) {
             this->workerQueue[i]->start();
         }
 
-        // start the emitter
         e.start(workerQueue);
+
+        Collector<T, U> c{this->outputQueue, this->nWorker, this->tsGoal, this->feedbackQueue};
+        c.start();
 
         for (int i = 0; i < this->nWorker; i++) {
             this->workerQueue[i]->join();
         }
 
         e.join();
+        c.join();
     }
 };

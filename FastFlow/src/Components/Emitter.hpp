@@ -12,7 +12,8 @@
 using namespace ff;
 
 ///  @brief Implementation of the emitter of the farm
-struct Emitter : ff_monode_t<Task, Task> {
+template <typename T, typename U>
+struct Emitter : ff_monode_t<Task<T, U>, Task<T, U>> {
    private:
     ff_loadbalancer *const lb;
     // Number of sent task
@@ -23,7 +24,7 @@ struct Emitter : ff_monode_t<Task, Task> {
     std::vector<int> activeWorkers;
     std::vector<int> sleepingWorkers;
     // In this vector i store the task that i can't send immediately to a worker
-    std::vector<Task *> inputTasks;
+    std::vector<Task<T, U> *> inputTasks;
     // ID of the last worker that received a task
     int lastWorker = 0;
     // The number of tasks to be computed
@@ -67,7 +68,7 @@ struct Emitter : ff_monode_t<Task, Task> {
     ///  @details
     ///  @return Void
     void setSleeping(int index) {
-        ff_send_out_to(GO_OUT, index);
+        this->ff_send_out_to(this->GO_OUT, index);
         sleepingWorkers[index] = 1;
         sleeping++;
     }
@@ -96,7 +97,7 @@ struct Emitter : ff_monode_t<Task, Task> {
     //   send the task to the worker and
     //   we have to increment the variables working and sent.
     ///  @return Void
-    void sendTask(Task *task, int worker) {
+    void sendTask(Task<T, U> *task, int worker) {
         task->workingThreads = this->nWorkers;
         setWorking(worker);
         lb->ff_send_out_to(task, worker);
@@ -107,7 +108,7 @@ struct Emitter : ff_monode_t<Task, Task> {
     ///  feedback provided by the worker
     ///  @param *Task The feedback provided by the worker
     ///  @return Void
-    void checkWakeUp(Task *task) {
+    void checkWakeUp(Task<T, U> *task) {
         if (task->newWorkingThreads > this->nWorkers) {
             if (task->newWorkingThreads > this->maxWorkers) {
                 this->nWorkers = this->maxWorkers;
@@ -128,7 +129,7 @@ struct Emitter : ff_monode_t<Task, Task> {
     ///  one or more worker based on the feedback provided by the worker
     ///  @param *Task The feedback provided by the worker
     ///  @return Void
-    void checkSleep(Task *task) {
+    void checkSleep(Task<T, U> *task) {
         if (task->newWorkingThreads < this->nWorkers) {
             if (task->newWorkingThreads == 0) {
                 this->nWorkers = 1;
@@ -173,15 +174,15 @@ struct Emitter : ff_monode_t<Task, Task> {
             activeWorkers.push_back(1);
             sleepingWorkers.push_back(0);
         }
-        this->lastWorker = get_num_outchannels();
+        this->lastWorker = this->get_num_outchannels();
         return 0;
     }
     bool finish = false;
 
-    Task *svc(Task *in) {
+    Task<T, U> *svc(Task<T, U> *in) {
         int wid = lb->get_channel_id();
 
-        Task *task = reinterpret_cast<Task *>(in);
+        Task<T, U> *task = reinterpret_cast<Task<T, U> *>(in);
 
         /*  
             In this case we receive the task from the ExternalEmitter
@@ -191,14 +192,14 @@ struct Emitter : ff_monode_t<Task, Task> {
             int worker = getFirstActive();
             if (worker == -1) {
                 inputTasks.push_back(task);
-                return GO_ON;
+                return this->GO_ON;
             } else {
                 sendTask(task, worker);
             }
         }
 
         // In this case we received the feedback from one of the workers
-        if ((size_t)wid < get_num_outchannels()) {
+        if ((size_t)wid < this->get_num_outchannels()) {
             setFree(wid);
 
             // wake up one or more worker based on the information of the feedback
@@ -211,6 +212,7 @@ struct Emitter : ff_monode_t<Task, Task> {
                 I have to check if there are some tasks in the temporary queue.
                 If there are some tasks i send one (or more) task to a worker.
             */
+
             if (inputTasks.size() > 0) {
                 /*
                     This while is necessary because when i decrease the number of 
@@ -218,14 +220,18 @@ struct Emitter : ff_monode_t<Task, Task> {
                     a task to a worker even if it didn't send a feedback because it 
                     was sleeping.
                 */
-                while (this->working < this->nWorkers) {
+
+                while (this->working < this->nWorkers && inputTasks.size() > 0) {
                     int index = getFirstActive();
 
                     if (index >= 0) {
-                        Task *inTask = reinterpret_cast<Task *>(inputTasks.front());
+                        Task<T, U> *inTask = reinterpret_cast<Task<T, U> *>(inputTasks.front());
+
                         inTask->workingThreads = this->nWorkers;
+
                         sendTask(inTask, index);
-                        inputTasks.erase(inputTasks.begin());
+
+                        inputTasks.erase(inputTasks.begin());  /// <---------
                     }
                 }
             }
@@ -241,10 +247,10 @@ struct Emitter : ff_monode_t<Task, Task> {
                 wakeUpWorker(i);
                 //std::cout << "wake up " << i << std::endl;
             }
-            lb->broadcast_task(EOS);
-            return EOS;
+            lb->broadcast_task(this->EOS);
+            return this->EOS;
         } else {
-            return GO_ON;
+            return this->GO_ON;
         }
     }
 };

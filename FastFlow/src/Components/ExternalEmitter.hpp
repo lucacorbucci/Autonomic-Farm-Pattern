@@ -10,16 +10,17 @@
 // clang-format on
 
 ///  @brief Implementation of the "external emitter"
-struct ExternalEmitter : ff_node_t<Task, void> {
-    std::vector<Task *> inputTasks;
+template <typename T, typename U>
+struct ExternalEmitter : ff_node_t<Task<T, U>, void> {
+    std::vector<Task<T, U> *> inputTasks;
 
-    ExternalEmitter(std::vector<Task *> inputTasks) : inputTasks(inputTasks) {}
+    ExternalEmitter(std::vector<Task<T, U> *> inputTasks) : inputTasks(inputTasks) {}
 
-    void *svc(Task *) {
+    void *svc(Task<T, U> *) {
         for (unsigned int i = 0; i < inputTasks.size(); i++) {
-            ff_send_out(inputTasks[i]);
+            this->ff_send_out(inputTasks[i]);
         }
 
-        return EOS;
+        return this->EOS;
     }
 };

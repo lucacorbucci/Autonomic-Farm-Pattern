@@ -10,7 +10,7 @@ INCLUDES	= -I $(FF_ROOT) -I ./
 CXXFLAGS  	= -g
 
 LDFLAGS 	= -pthread
-OPTFLAGS	= -O3 -finline-functions -DNDEBUG 
+OPTFLAGS	= -O3 -finline-functions -DNDEBUG -g
 
 TARGETS		= ./Test/mainPrime ./Test/mainPalindrome ./Test/mainFib
 

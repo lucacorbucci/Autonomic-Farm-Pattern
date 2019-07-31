@@ -16,6 +16,7 @@
 // clang-format on
 
 ///  @brief Implementation of the Autonomic Farm Pattern
+template <typename T, typename U>
 class AutonomicFarm {
    private:
     // Initial (and maximum) number of worker
@@ -25,11 +26,11 @@ class AutonomicFarm {
     // Size of the vector with imput tasks
     int inputSize;
     // Input of the vector
-    int n1;
-    int n2;
-    int n3;
+    U n1;
+    U n2;
+    U n3;
     // Function to be computed
-    std::function<int(int x)> function;
+    std::function<T(U x)> function;
 
     ///  @brief Send a sleep signal to a thread
     ///  @param int Size of the input Vector
@@ -37,11 +38,11 @@ class AutonomicFarm {
     ///  @param int Integer contained in the second part of the input vector
     ///  @param int Integer contained in the third part of the input vector
     ///  @return std::vector<Task *> Filled vector
-    std::vector<Task *> fillVector(int inputSize, int n1, int n2, int n3) {
-        std::vector<Task *> inputVector;
+    std::vector<Task<T, U> *> fillVector(int inputSize, U n1, U n2, U n3) {
+        std::vector<Task<T, U> *> inputVector;
         inputVector.reserve(inputSize);
         for (int i = 0; i < inputSize; i++) {
-            Task *task = new Task();
+            Task<T, U> *task = new Task<T, U>();
             if (i > 2 * (inputSize / 3))
                 task->value = n3;
             else if (i > (inputSize / 3)) {
@@ -64,13 +65,13 @@ class AutonomicFarm {
     ///  @param int Integer contained in the third part of the input vector
     ///  @param fun Function to be computed
     ///  @return Void
-    AutonomicFarm(int nWorker, int tsGoal, int inputSize, int n1, int n2, int n3, std::function<int(int x)> fun) {
+    AutonomicFarm(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, std::function<T(U x)> fun) {
         this->nWorker = nWorker;
         this->tsGoal = tsGoal;
         this->inputSize = inputSize;
-        this->n1 = n1;
-        this->n2 = n2;
-        this->n3 = n3;
+        this->n1 = input1;
+        this->n2 = input2;
+        this->n3 = input3;
         this->function = fun;
     }
 
@@ -79,14 +80,14 @@ class AutonomicFarm {
         // I create the vector with all the workers
         std::vector<ff_node *> w;
         for (int i = 0; i < nWorker; i++)
-            w.push_back(new Worker(this->function, i, tsGoal));
+            w.push_back(new Worker<T, U>(this->function, i, tsGoal));
 
         // Fill the vector with input task
-        std::vector<Task *> inputVector = fillVector(inputSize, n1, n2, n3);
-        ExternalEmitter extEm(inputVector);
+        std::vector<Task<T, U> *> inputVector = fillVector(inputSize, n1, n2, n3);
+        ExternalEmitter<T, U> extEm(inputVector);
         ff_farm farm;
-        Collector *c = new Collector(tsGoal);
-        Emitter *e = new Emitter(farm.getlb(), nWorker, inputSize);
+        Collector<T, U> *c = new Collector<T, U>(tsGoal);
+        Emitter<T, U> *e = new Emitter<T, U>(farm.getlb(), nWorker, inputSize);
 
         farm.add_workers(w);
         farm.add_emitter(e);
@@ -112,7 +113,7 @@ class AutonomicFarm {
         /*
             Get the output from the collector and print it
         */
-        std::vector<Task *> results = c->results;
+        std::vector<Task<T, U> *> results = c->results;
 
         for (auto item : results) {
             //std::cout << item->result << std::endl;

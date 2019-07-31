@@ -58,6 +58,10 @@ void init(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, 
 
 int main(int argc, char* argv[]) {
     if (argc >= 7) {
+        int nWorker = atoi(argv[1]);
+        int tsGoal = atoi(argv[2]);
+        int inputSize = atoi(argv[3]);
+
         init<bool, int>(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), isPrime);
 
     } else {

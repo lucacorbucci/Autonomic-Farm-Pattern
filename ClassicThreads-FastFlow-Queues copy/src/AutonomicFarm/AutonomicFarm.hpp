@@ -5,6 +5,7 @@
 #include <vector>
 #include "Worker.hpp"
 #include "Emitter.hpp"
+#include "Collector.hpp"
 #include <mutex>
 #include <chrono>
 #include <condition_variable>
@@ -36,6 +37,8 @@ class AutonomicFarm {
     int nWorker;
     ///  @brief Expected Ts
     int tsGoal;
+
+    uMPMC_Ptr_Queue* outputQueue = new uMPMC_Ptr_Queue();
 
     ///  @brief Constructor method of the AutonomicFarm Class
     ///  @detail Typename T is used for as output type of the function that
@@ -71,7 +74,7 @@ class AutonomicFarm {
 
         // Fill the worker queue
         for (int i = 0; i < this->nWorker; i++) {
-            this->workerQueue.push_back(new Worker<T, U>{i, this->function, this->inputQueues[i], this->feedbackQueue, this->nWorker, this->tsGoal});
+            this->workerQueue.push_back(new Worker<T, U>{i, this->function, this->inputQueues[i], this->outputQueue});
         }
 
         // Create the emitter
@@ -85,10 +88,14 @@ class AutonomicFarm {
         // start the emitter
         e.start(workerQueue);
 
+        Collector<T, U> c{this->outputQueue, this->nWorker, this->tsGoal, this->feedbackQueue};
+        c.start();
+
         for (int i = 0; i < this->nWorker; i++) {
             this->workerQueue[i]->join();
         }
 
         e.join();
+        c.join();
     }
 };

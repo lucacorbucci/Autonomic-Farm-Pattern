@@ -12,10 +12,11 @@
 using namespace ff;
 
 ///  @brief Implementation of the Worker of the farm
-struct Worker : ff_monode_t<Task> {
+template <typename T, typename U>
+struct Worker : ff_monode_t<Task<T, U>> {
    private:
     // Function computed by the worker
-    std::function<int(int x)> fun;
+    std::function<T(U x)> fun;
     // ID of the worker
     int ID;
     int tsGoal;
@@ -23,12 +24,12 @@ struct Worker : ff_monode_t<Task> {
     ///  @brief Change the number of workers that we want to have in the farm
     ///  based on the elapsed time and the TsGoal.
     ///  @param Task* Task that I use as a feedback where I store the new number of workers.
-    void setNewNWorker(Task *t) {
+    void setNewNWorker(Task<T, U> *t) {
         std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
         int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        //std ::cout << "Calcolato " << t->value << " Con " << t->workingThreads << " da " << get_my_id() << " in " << elapsedINT << " myTS: " << TS << " Ideal TS " << this->tsGoal << " New NWorkers " << newNWorker << std::endl;
+        // std ::cout << "Calcolato " << t->value << " Con " << t->workingThreads << " in " << elapsedINT << " myTS: " << TS << " Ideal TS " << this->tsGoal << " New NWorkers " << newNWorker << std::endl;
 
         t->newWorkingThreads = newNWorker;
     }
@@ -39,13 +40,13 @@ struct Worker : ff_monode_t<Task> {
     ///  @param int Worker's ID
     ///  @param int Expected service time
 
-    Worker(std::function<int(int x)> fun, int ID, int tsGoal) {
+    Worker(std::function<T(U x)> fun, int ID, int tsGoal) {
         this->fun = fun;
         this->ID = ID;
         this->tsGoal = tsGoal;
     }
 
-    Task *svc(Task *t) {
+    Task<T, U> *svc(Task<T, U> *t) {
         /*
             I store in the task structure the starting time of the worker
             and the ending time. Then i send the task to the collector
@@ -56,10 +57,9 @@ struct Worker : ff_monode_t<Task> {
         t->endingTime = std::chrono::high_resolution_clock::now();
 
         setNewNWorker(t);
-        ff_send_out_to(t, 1);
-        ff_send_out_to(t, 0);
-
-        return GO_ON;
+        this->ff_send_out_to(t, 1);
+        this->ff_send_out_to(t, 0);
+        return this->GO_ON;
     }
 
     void svc_end() {
