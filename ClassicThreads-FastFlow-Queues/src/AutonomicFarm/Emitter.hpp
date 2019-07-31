@@ -9,14 +9,19 @@
 using namespace ff;
 
 ///  @brief Implementation of the Emitter of the autonomic farm
+///  @detail Typename T is used for as output type of the function that
+///  the worker will compute. Typename U is input as output type of the function
+///  that the worker will compute.
 template <class T, class U>
 class Emitter {
    private:
     std::vector<SWSR_Ptr_Buffer *> outputQueue;
     std::thread emitterThread;
     std::vector<Worker<T, U> *> workerQueue;
-    //boost::lockfree::spsc_queue<Feedback> *feedbackQueue;
     uSWSR_Ptr_Buffer *feedbackQueue;
+    // This bitVector is used to store the status of the workers
+    // 1 -> the worker is active
+    // 0 -> the worker is sleeping
     std::vector<int> bitVector;
     std::vector<Task<T, U> *> inputVector;
     int nWorker;
@@ -99,6 +104,27 @@ class Emitter {
             : sendWakeUpSignal(currentNumWorker, prevNumWorker);
     }
 
+    ///  @brief Wake up all the workers and then send a task
+    ///  with a special value to terminate all the workers.
+    void terminate() {
+        // I have to send the final task with value -1 to stop the workers
+        int sent = 0;
+        int d = getFirstSleeping();
+        while (d != -1) {
+            workerQueue[d]->restartWorker();
+            bitVector[d] = 1;
+            d = getFirstSleeping();
+        }
+
+        while (sent < outputQueue.size()) {
+            Task<T, U> *task = new Task<T, U>();
+            task->end = -1;
+            if (outputQueue[sent]->push(task)) {
+                sent++;
+            }
+        }
+    }
+
     ///  @brief code of the emitter of the autonomic farm
     ///  @details
     ///  This function extracts a task from the input vector and push this task
@@ -126,7 +152,6 @@ class Emitter {
 
                     void *tmpF;
                     bool res = this->feedbackQueue->pop(&tmpF);
-                    //std::cout  <<  res << std::endl;
                     if (res) {
                         Feedback *f = reinterpret_cast<Feedback *>(tmpF);
 
@@ -140,22 +165,7 @@ class Emitter {
             }
         }
 
-        // I have to send the final task with value -1 to stop the workers
-        int sent = 0;
-        int d = getFirstSleeping();
-        while (d != -1) {
-            workerQueue[d]->restartWorker();
-            bitVector[d] = 1;
-            d = getFirstSleeping();
-        }
-
-        while (sent < outputQueue.size()) {
-            Task<T, U> *task = new Task<T, U>();
-            task->end = -1;
-            if (outputQueue[sent]->push(task)) {
-                sent++;
-            }
-        }
+        terminate();
     }
 
    public:

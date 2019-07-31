@@ -10,14 +10,16 @@
 using namespace ff;
 
 ///  @brief Implementation of the collector of the autonomic farm
+///  @detail Typename T is used for as output type of the function that
+///  the worker will compute. Typename U is input as output type of the function
+///  that the worker will compute.
 template <class T, class U>
 class Collector {
    private:
     uMPMC_Ptr_Queue *inputQueue;
     std::thread collectorThread;
-    std::vector<U> accumulator;
+    std::vector<T> accumulator;
     uSWSR_Ptr_Buffer *feedbackQueue;
-    //boost::lockfree::spsc_queue<Feedback> *feedbackQueue;
     int activeWorkers;
     int tsGoal;
     int maxWorkers;
@@ -96,9 +98,9 @@ class Collector {
                     }
                 }
             }
-            for (U x : accumulator) {
-                std::cout << x << std::endl;
-            }
+            // for (T x : accumulator) {
+            //     std::cout << x << std::endl;
+            // }
         });
     }
 

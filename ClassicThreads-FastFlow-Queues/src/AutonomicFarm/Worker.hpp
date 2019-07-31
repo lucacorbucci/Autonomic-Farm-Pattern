@@ -21,6 +21,9 @@ using namespace ff;
 #define STOPPED false;
 
 ///  @brief Implementation of the Worker of the autonomic farm
+///  @detail Typename T is used for as output type of the function that
+///  the worker will compute. Typename U is input as output type of the function
+///  that the worker will compute.
 template <class T, class U>
 class Worker {
    private:
@@ -33,6 +36,8 @@ class Worker {
     std::unique_lock<std::mutex> *lock = new std::unique_lock<std::mutex>(*d_mutex);
     bool status = true;
     int ID;
+
+    
 
     ///  @brief Put this thread in sleep
     ///  @return Void

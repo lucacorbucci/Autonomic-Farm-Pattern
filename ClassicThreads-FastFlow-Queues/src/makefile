@@ -12,7 +12,7 @@ CXXFLAGS  	= -g
 LDFLAGS 	= -pthread
 OPTFLAGS	= -O3 -finline-functions -DNDEBUG -g
 
-TARGETS		= main
+TARGETS		= ./Test/mainPrime ./Test/mainPalindrome ./Test/mainFib
 
 .PHONY: all clean cleanall
 .SUFFIXES: .cpp
@@ -26,3 +26,8 @@ clean		:
 	rm -f $(TARGETS).out
 cleanall	: clean
 	\rm -f *.o *~
+
+test:
+	./Test/mainFib.out 4 1000 30 33 35 36
+	./Test/mainPrime.out 4 1000 1000000 15487469 1301081 15485867
+	./Test/mainPalindrome.out 4 100 1000000 "DennisNellEdnaLeonNedraAnitaRolfNoraAliceCarolLeoJaneReedDenaDaleBasilRaePennyLanaDaveDennyLenaIdaBernadetteBenRayLilaNinaJoIraMaraSaraMarioJanInaLilyArneBetteDanRebaDianeLynnEdEvaDanaLynnePearlIsabelAdaNedDeeRenaJoelLoraCecilAaronFloraTinaArdenNoelandEllensinned" "itopinonavevanonipoti" "ciaomondo"
