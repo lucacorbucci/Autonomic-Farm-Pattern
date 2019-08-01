@@ -65,7 +65,8 @@ class Worker {
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
         int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << t->workingThreads << " new number of workers: " << newNWorker << std::endl;
+        //std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << t->workingThreads << " new number of workers: " << newNWorker << std::endl;
+        std::cout << TS << std::endl;
     }
 
     ///  @brief Create a Feedback that the worker will send to the emitter
@@ -111,7 +112,7 @@ class Worker {
                     accumulator.push_back(t->result);
 
                     int newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
-                    //debug(t);
+                    debug(t);
 
                     if (newNWorker != currentWorkers) {
                         currentWorkers = newNWorker;
