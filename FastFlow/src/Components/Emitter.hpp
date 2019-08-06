@@ -36,6 +36,13 @@ struct Emitter : ff_monode_t<Task<T, U>, Task<T, U>> {
     // In working I count how many threads are working
     int working = 0;
 
+    int x;
+    int count = 0;
+
+    int received = 0;
+
+    bool eosReceived = false;
+
     ///  @brief This function return the index of first active worker
     ///  @return The index of the first active worker
     int
@@ -110,18 +117,28 @@ struct Emitter : ff_monode_t<Task<T, U>, Task<T, U>> {
     ///  @return Void
     void checkWakeUp(Task<T, U> *task) {
         if (task->newWorkingThreads > this->nWorkers) {
-            if (task->newWorkingThreads > this->maxWorkers) {
-                this->nWorkers = this->maxWorkers;
+            if (count == 0) {
+                x = task->newWorkingThreads;
+                count = 1;
             } else {
-                this->nWorkers = task->newWorkingThreads;
+                task->newWorkingThreads == x ? count++ : count = 0;
             }
 
-            unsigned int index = 0;
-            while (sleeping + this->nWorkers != this->maxWorkers && index < sleepingWorkers.size()) {
-                if (sleepingWorkers[index] == 1) {
-                    wakeUpWorker(index);
+            if (count == 2) {
+                if (task->newWorkingThreads > this->maxWorkers) {
+                    this->nWorkers = this->maxWorkers;
+                } else {
+                    this->nWorkers = task->newWorkingThreads;
                 }
-                index++;
+
+                unsigned int index = 0;
+                while (sleeping + this->nWorkers != this->maxWorkers && index < sleepingWorkers.size()) {
+                    if (sleepingWorkers[index] == 1) {
+                        wakeUpWorker(index);
+                    }
+                    index++;
+                }
+                count = 0;
             }
         }
     }
@@ -131,18 +148,28 @@ struct Emitter : ff_monode_t<Task<T, U>, Task<T, U>> {
     ///  @return Void
     void checkSleep(Task<T, U> *task) {
         if (task->newWorkingThreads < this->nWorkers) {
-            if (task->newWorkingThreads == 0) {
-                this->nWorkers = 1;
+            if (count == 0) {
+                x = task->newWorkingThreads;
+                count = 1;
             } else {
-                this->nWorkers = task->newWorkingThreads;
+                task->newWorkingThreads == x ? count++ : count = 0;
             }
 
-            int index = 0;
-            while (sleeping + this->nWorkers < this->maxWorkers) {
-                if (sleepingWorkers[index] == 0) {
-                    setSleeping(index);
+            if (count == 2) {
+                if (task->newWorkingThreads == 0) {
+                    this->nWorkers = 1;
+                } else {
+                    this->nWorkers = task->newWorkingThreads;
                 }
-                index++;
+
+                unsigned int index = 0;
+                while (sleeping + this->nWorkers < this->maxWorkers && index < sleepingWorkers.size()) {
+                    if (sleepingWorkers[index] == 0 && activeWorkers[index] == 1) {
+                        setSleeping(index);
+                    }
+                    index++;
+                }
+                count = 0;
             }
         }
     }
@@ -159,6 +186,7 @@ struct Emitter : ff_monode_t<Task<T, U>, Task<T, U>> {
         this->nTask = nTask;
         this->maxWorkers = nWorkers;
         this->sleeping = 0;
+        this->x = nWorkers;
     }
 
     int svc_init() {
@@ -181,6 +209,7 @@ struct Emitter : ff_monode_t<Task<T, U>, Task<T, U>> {
 
     Task<T, U> *svc(Task<T, U> *in) {
         int wid = lb->get_channel_id();
+        //std::cout << "------------------ " << wid << " ------------------ " << std::endl;
 
         Task<T, U> *task = reinterpret_cast<Task<T, U> *>(in);
 
@@ -200,8 +229,9 @@ struct Emitter : ff_monode_t<Task<T, U>, Task<T, U>> {
 
         // In this case we received the feedback from one of the workers
         if ((size_t)wid < this->get_num_outchannels()) {
+            //std::cout << "ricevuto feedback da " << wid << std::endl;
             setFree(wid);
-
+            received++;
             // wake up one or more worker based on the information of the feedback
             checkWakeUp(task);
 
@@ -238,19 +268,40 @@ struct Emitter : ff_monode_t<Task<T, U>, Task<T, U>> {
         }
 
         // I have to check if i send all the tasks to the workers.
-        if (sent == nTask) {
+        if (eosReceived && inputTasks.size() == 0 && working == 0) {
+            std::cout << "STOP" << std::endl;
             /*
                 In this case i send a wake up signal to all the workers
                 and then i send an EOS to all the workers.
             */
+            // unsigned int index = 0;
+            // while (sleeping > 0 && index < sleepingWorkers.size()) {
+            //     if (sleepingWorkers[index] == 1) {
+            //         wakeUpWorker(index);
+            //     }
+            //     index++;
+            // }
             for (int i = 0; i < this->maxWorkers; i++) {
                 wakeUpWorker(i);
-                //std::cout << "wake up " << i << std::endl;
+                std::cout << "wake up " << i << std::endl;
+                //this->ff_send_out_to(this->EOS, i);
             }
-            lb->broadcast_task(this->EOS);
+            this->broadcast_task(this->EOS);
             return this->EOS;
         } else {
+            std::cout << received << " " << sleeping + this->nWorkers << " " << eosReceived << " " << inputTasks.size() << " " << working << std::endl;
             return this->GO_ON;
+        }
+    }
+
+    void svc_end() {
+        std::cout << "-----------Terminazione emitter-----------" << std::endl;
+    }
+
+    void eosnotify(ssize_t id) {
+        if (id == -1) {
+            eosReceived = true;
+            std::cout << "EOS RECEIVED EMITTER" << std::endl;
         }
     }
 };

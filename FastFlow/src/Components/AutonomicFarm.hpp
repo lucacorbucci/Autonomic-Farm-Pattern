@@ -99,7 +99,7 @@ class AutonomicFarm {
         //farm.run_and_wait_end();
         farm.getlb()->waitlb();
         ff_Pipe<> pipe(extEm, farm);
-
+        ffTime(START_TIME);
         if (pipe.run_then_freeze() < 0) {
             error("running pipe\n");
 
@@ -109,6 +109,8 @@ class AutonomicFarm {
         pipe.wait_freezing();
 
         pipe.wait();
+        ffTime(STOP_TIME);
+        std::cout << "Time: " << ffTime(GET_TIME) << " (ms)\n";
 
         /*
             Get the output from the collector and print it

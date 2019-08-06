@@ -37,6 +37,10 @@ struct Collector : ff_minode_t<Task<T, U>, void> {
     }
 
     void svc_end() {
-        //printf("Collector ending\n");
+        //printf("----------------------Collector ending------------------------\n");
+    }
+
+    void eosnotify(ssize_t id) {
+        ///std::cout << "EOS " << std::endl;
     }
 };
