@@ -269,7 +269,7 @@ struct Emitter : ff_monode_t<Task<T, U>, Task<T, U>> {
 
         // I have to check if i send all the tasks to the workers.
         if (eosReceived && inputTasks.size() == 0 && working == 0) {
-            std::cout << "STOP" << std::endl;
+            // std::cout << "STOP" << std::endl;
             /*
                 In this case i send a wake up signal to all the workers
                 and then i send an EOS to all the workers.
@@ -283,25 +283,25 @@ struct Emitter : ff_monode_t<Task<T, U>, Task<T, U>> {
             // }
             for (int i = 0; i < this->maxWorkers; i++) {
                 wakeUpWorker(i);
-                std::cout << "wake up " << i << std::endl;
+                //std::cout << "wake up " << i << std::endl;
                 //this->ff_send_out_to(this->EOS, i);
             }
             this->broadcast_task(this->EOS);
             return this->EOS;
         } else {
-            std::cout << received << " " << sleeping + this->nWorkers << " " << eosReceived << " " << inputTasks.size() << " " << working << std::endl;
+            //std::cout << received << " " << sleeping + this->nWorkers << " " << eosReceived << " " << inputTasks.size() << " " << working << std::endl;
             return this->GO_ON;
         }
     }
 
     void svc_end() {
-        std::cout << "-----------Terminazione emitter-----------" << std::endl;
+        // std::cout << "-----------Terminazione emitter-----------" << std::endl;
     }
 
     void eosnotify(ssize_t id) {
         if (id == -1) {
             eosReceived = true;
-            std::cout << "EOS RECEIVED EMITTER" << std::endl;
+            //  std::cout << "EOS RECEIVED EMITTER" << std::endl;
         }
     }
 };
