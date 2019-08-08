@@ -58,7 +58,6 @@ class AutonomicFarmSQ {
     /// (emitter, workers, collector)
     ///  @return Void
     void start() {
-        std::cout << "SAFE QUEUE" << std::endl;
         for (int i = 0; i < this->nWorker; i++) {
             SafeQueue<Task<T, U>*>* b = new SafeQueue<Task<T, U>*>();
 

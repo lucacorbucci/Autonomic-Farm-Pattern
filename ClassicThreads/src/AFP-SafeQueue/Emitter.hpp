@@ -200,10 +200,6 @@ class EmitterSQ {
     EmitterSQ(std::vector<SafeQueue<Task<T, U> *> *> *outputQueue, std::vector<WorkerSQ<T, U> *> workerQueue, int nWorker, SafeQueue<Feedback *> *feedbackQueue, std::vector<Task<T, U> *> inputVector, SafeQueue<Feedback *> *feedbackQueueWorker) {
         this->outputQueue = outputQueue;
 
-        // for (int i = 0; i < nWorker; i++) {
-        //     std::cout << "Emitter " << &(*this->outputQueue)[i] << std::endl;
-        // }
-
         this->workerQueue = workerQueue;
         this->maxnWorker = nWorker;
         this->feedbackQueue = feedbackQueue;
@@ -225,7 +221,6 @@ class EmitterSQ {
     ///  @brief Start the thread of the emitter componentend.
     ///  @return Void
     void start(std::vector<WorkerSQ<T, U> *> workQueue) {
-        // std::cout << "Emitter avviato" << std::endl;
         this->emitterThread = std::thread([=] {
             threadBody();
         });

@@ -108,7 +108,7 @@ class CollectorSQ {
                             if (counter == this->activeWorkers) break;
                         } else {
                             int newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
-                            debug(t);
+                            //debug(t);
                             sendFeedback(newNWorker);
 
                             accumulator.push_back(t->result);
@@ -117,10 +117,7 @@ class CollectorSQ {
                     }
                 }
             }
-            for (T x : accumulator) {
-                std::cout << x << std::endl;
-            }
-        });
+                });
     }
 
     ///  @brief This function is used to join the thread

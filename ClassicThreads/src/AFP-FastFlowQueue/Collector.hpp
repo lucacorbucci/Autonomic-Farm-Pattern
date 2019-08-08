@@ -34,7 +34,7 @@ class Collector {
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
         int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        //std::cout << TS << std::endl;
+        std::cout << TS << std::endl;
         //std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << t->workingThreads << " new number of workers: " << newNWorker << std::endl;
     }
 
@@ -72,13 +72,12 @@ class Collector {
     ///  the number of workers
     ///  @return Void
     void start() {
-        std::cout << "Collector avviato" << std::endl;
         this->collectorThread = std::thread([=] {
             int counter = 0;
             int c = 0;
             while (true) {
                 void *tmpTask;
-                //I have to check if the queue is empty or not.
+                //Check if the queue is empty or not.
                 if (inputQueue->pop(&tmpTask)) {
                     Task<T, U> *t = reinterpret_cast<Task<T, U> *>(tmpTask);
 
@@ -87,16 +86,13 @@ class Collector {
                         if (counter == this->activeWorkers) break;
                     } else {
                         int newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
-                        debug(t);
+                        //debug(t);
                         sendFeedback(newNWorker);
 
                         accumulator.push_back(t->result);
                     }
                 }
             }
-            // for (T x : accumulator) {
-            //     std::cout << x << std::endl;
-            // }
         });
     }
 

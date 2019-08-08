@@ -68,41 +68,41 @@ void init(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, 
 }
 
 int main(int argc, char* argv[]) {
+    std::stringstream ss;
+    ss << argv[0] << "nWorker inputSize tsGoal n1 n2 n3";
+    cxxopts::Options options("Autonomic Farm patter", ss.str());
+
     std::string collectorString = "true";
     std::string safeQueueString = "false";
 
     bool collector = true;
     bool safeQueue = false;
     const unsigned int maxWorkers = std::thread::hardware_concurrency();
-    int workers = 0;
-    int inputSize = 0;
-    int tsGoal = 0;
+    int workers = atoi(argv[1]);
 
     // clang-format off
-    cxxopts::Options options("Autonomic Farm patter", "Options");
-    options.add_options()
-        ("h, help", "Help")
-        ("c, collector", "Collector (default: true)", cxxopts::value(collectorString))
-        ("w, worker", "Num Worker (default: Max parallelism degree)", cxxopts::value(workers))
-        ("i, inputSize", " (default: )", cxxopts::value(inputSize))
-        ("t, tsGoal", "TsGoal (default: 0)", cxxopts::value(tsGoal))
-        ("d, inputData", "Input data (default: [])", cxxopts::value(inputArray<int>))
-        ("s, safeQueue", "safeQueue (default: false)", cxxopts::value(safeQueueString));
+        options.add_options()
+            ("h, help", "Help")
+            ("c, collector", "Collector (default: true)", cxxopts::value(collectorString))
+            ("s, safeQueue", "safeQueue (default: false)", cxxopts::value(safeQueueString));
     // clang-format on
 
-    auto result = options.parse(argc, argv);
-    if (result.count("help")) {
+    if (argc >= 7) {
+        auto result = options.parse(argc, argv);
+        if (result.count("help")) {
+            std::cout << options.help({"", "Group"}) << std::endl;
+            exit(0);
+        }
+        auto arguments = result.arguments();
+
+        if (workers > maxWorkers)
+            workers = maxWorkers;
+        collector = parser(collectorString);
+        safeQueue = parser(safeQueueString);
+
+        init<int, int>(workers, atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), fib, collector, safeQueue);
+    } else {
         std::cout << options.help({"", "Group"}) << std::endl;
-        exit(0);
     }
-    auto arguments = result.arguments();
-
-    if (workers > maxWorkers)
-        workers = maxWorkers;
-    collector = parser(collectorString);
-    safeQueue = parser(safeQueueString);
-
-    init<int, int>(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), fib, collector, safeQueue);
-
     return 0;
 }

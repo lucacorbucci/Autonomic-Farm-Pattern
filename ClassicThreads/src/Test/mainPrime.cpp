@@ -3,7 +3,10 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#include "./AutonomicFarm/AutonomicFarm.hpp"
+#include "../AFP-FastFlowQueue/AutonomicFarm.hpp"
+#include "../AFP-SafeQueue/AutonomicFarm.hpp"
+#include "../Utils/cxxopts.hpp"
+#include "../Utils/parser.hpp"
 #include <mutex>
 #include <cmath>
 #include <chrono>
@@ -47,26 +50,58 @@ std::vector<Task<T, U>*> fillVector(int inputSize, U n1, U n2, U n3) {
 ///  the worker will compute. Typename U is input as output type of the function
 ///  that the worker will compute.
 template <typename T, typename U>
-void init(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, std::function<T(U x)> function) {
+void init(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, std::function<T(U x)> function, bool collector, bool safeQueue) {
     // Fill the vector with input task
     std::vector<Task<T, U>*> inputVector = fillVector<T, U>(inputSize, input1, input2, input3);
 
     // Create the farm
-    AutonomicFarm<T, U> f = AutonomicFarm<T, U>(nWorker, function, tsGoal, inputVector);
-    f.start();
+    if (safeQueue) {
+        // SafeQueue
+        AutonomicFarmSQ<T, U> f = AutonomicFarmSQ<T, U>(nWorker, function, tsGoal, inputVector, collector);
+        f.start();
+    } else {
+        // Fastflow queue
+        AutonomicFarm<T, U> f = AutonomicFarm<T, U>(nWorker, function, tsGoal, inputVector, collector);
+        f.start();
+    }
 }
 
 int main(int argc, char* argv[]) {
+    std::stringstream ss;
+    ss << argv[0] << "nWorker inputSize tsGoal n1 n2 n3";
+    cxxopts::Options options("Autonomic Farm patter", ss.str());
+
+    std::string collectorString = "true";
+    std::string safeQueueString = "false";
+
+    bool collector = true;
+    bool safeQueue = false;
+    const unsigned int maxWorkers = std::thread::hardware_concurrency();
+    int workers = atoi(argv[1]);
+
+    // clang-format off
+        options.add_options()
+            ("h, help", "Help")
+            ("c, collector", "Collector (default: true)", cxxopts::value(collectorString))
+            ("s, safeQueue", "safeQueue (default: false)", cxxopts::value(safeQueueString));
+    // clang-format on
+
     if (argc >= 7) {
-        int nWorker = atoi(argv[1]);
-        int tsGoal = atoi(argv[2]);
-        int inputSize = atoi(argv[3]);
+        auto result = options.parse(argc, argv);
+        if (result.count("help")) {
+            std::cout << options.help({"", "Group"}) << std::endl;
+            exit(0);
+        }
+        auto arguments = result.arguments();
 
-        init<bool, int>(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), isPrime);
+        if (workers > maxWorkers)
+            workers = maxWorkers;
+        collector = parser(collectorString);
+        safeQueue = parser(safeQueueString);
 
+        init<int, int>(workers, atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), isPrime, collector, safeQueue);
     } else {
-        std::cout << argv[0] << " Usage: nWorker, tsGoal" << std::endl;
+        std::cout << options.help({"", "Group"}) << std::endl;
     }
-
     return 0;
 }
