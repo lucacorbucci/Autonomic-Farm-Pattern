@@ -31,6 +31,7 @@ class AutonomicFarmFF {
     U n3;
     // Function to be computed
     std::function<T(U x)> function;
+    int time;
 
     ///  @brief Send a sleep signal to a thread
     ///  @param int Size of the input Vector
@@ -65,7 +66,7 @@ class AutonomicFarmFF {
     ///  @param int Integer contained in the third part of the input vector
     ///  @param fun Function to be computed
     ///  @return Void
-    AutonomicFarmFF(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, std::function<T(U x)> fun) {
+    AutonomicFarmFF(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, std::function<T(U x)> fun, int time) {
         this->nWorker = nWorker;
         this->tsGoal = tsGoal;
         this->inputSize = inputSize;
@@ -73,6 +74,7 @@ class AutonomicFarmFF {
         this->n2 = input2;
         this->n3 = input3;
         this->function = fun;
+        this->time = time;
     }
 
     ///  @brief Start the execution of the farm
@@ -87,7 +89,7 @@ class AutonomicFarmFF {
         ExternalEmitterFF<T, U> extEm(inputVector);
         ff_farm farm;
         CollectorFF<T, U> *c = new CollectorFF<T, U>(tsGoal);
-        EmitterFF<T, U> *e = new EmitterFF<T, U>(farm.getlb(), nWorker, inputSize);
+        EmitterFF<T, U> *e = new EmitterFF<T, U>(farm.getlb(), nWorker, inputSize, time);
 
         farm.add_workers(w);
         farm.add_emitter(e);

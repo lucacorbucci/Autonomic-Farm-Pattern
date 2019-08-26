@@ -35,6 +35,7 @@ class AutonomicFarmSQ {
     bool collector;
     std::atomic<int>* timeEmitter = new std::atomic<int>(0);
     std::atomic<int>* timeCollector = new std::atomic<int>(0);
+    int time;
 
     ///  @brief Constructor method of the AutonomicFarm Class
     ///  @detail Typename T is used for as output type of the function that
@@ -45,7 +46,7 @@ class AutonomicFarmSQ {
     ///  @param tsGoal      Expected service time
     ///  @param inputVector Input Vector with the tasks that has to be computed
    public:
-    AutonomicFarmSQ(int nWorker, std::function<T(U x)> function, int tsGoal, std::vector<Task<T, U>*> inputVector, bool collector) {
+    AutonomicFarmSQ(int nWorker, std::function<T(U x)> function, int tsGoal, std::vector<Task<T, U>*> inputVector, bool collector, int time) {
         this->nWorker = nWorker;
         this->function = function;
         this->tsGoal = tsGoal;
@@ -54,6 +55,7 @@ class AutonomicFarmSQ {
 
         this->inputVector = inputVector;
         this->collector = collector;
+        this->time = time;
     }
 
     ///  @brief This function start the creation of the autonomic farm with its components
@@ -70,7 +72,7 @@ class AutonomicFarmSQ {
             this->workerQueue.push_back(new WorkerSQ<T, U>{i, this->function, inputQueues->at(i), this->outputQueue, this->feedbackQueueWorker, this->collector, this->nWorker, this->tsGoal, this->timeEmitter});
         }
 
-        EmitterSQ<T, U> e{this->inputQueues, workerQueue, nWorker, this->feedbackQueue, this->inputVector, this->feedbackQueueWorker, this->collector, this->timeEmitter};
+        EmitterSQ<T, U> e{this->inputQueues, workerQueue, nWorker, this->feedbackQueue, this->inputVector, this->feedbackQueueWorker, this->collector, this->timeEmitter, time};
 
         CollectorSQ<T, U>* c;
 

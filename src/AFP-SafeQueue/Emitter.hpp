@@ -46,7 +46,12 @@ class EmitterSQ {
     int count = 0;
     SafeQueue<Feedback *> *feedbackQueueWorker;
     bool collector;
+
     std::atomic<int> *timeEmitter;
+
+    std::chrono::high_resolution_clock::time_point lastUpdate;
+    int stopTime;
+    bool first = true;
 
     ///  @brief This function return the index of first active worker
     ///  @return The index of the first active worker
@@ -68,14 +73,11 @@ class EmitterSQ {
         return -1;
     }
 
-    ///  @brief Compute the modulo between and b
-    ///  @return The modulo between and b
-    long mod(long a, long b) { return (a % b + b) % b; }
-
     ///  @brief Send a sleep signal to a thread
     ///  @param int the ID of the thread to whom we want to send a sleep signal
     ///  @return Void
     void setSleeping(int index) {
+        workerQueue[index]->stopWorker();
         sleepingWorkers[index] = 1;
         sleeping++;
     }
@@ -84,6 +86,7 @@ class EmitterSQ {
     ///  @param int the ID of the thread to whom we want to send a wake up signal
     ///  @return Void
     void wakeUpWorker(int index) {
+        workerQueue[index]->restartWorker();
         sleepingWorkers[index] = 0;
         sleeping--;
     }
@@ -95,6 +98,8 @@ class EmitterSQ {
         while (sleeping + this->currentNumWorker != this->maxnWorker && index < sleepingWorkers.size()) {
             if (sleepingWorkers[index] == 1) {
                 wakeUpWorker(index);
+                lastUpdate = std::chrono::high_resolution_clock::now();
+                first = false;
             }
             index++;
         }
@@ -106,6 +111,8 @@ class EmitterSQ {
         while (sleeping + this->currentNumWorker < this->maxnWorker && index < activeWorkers.size()) {
             if (sleepingWorkers[index] == 0 && activeWorkers[index] == 1) {
                 setSleeping(index);
+                lastUpdate = std::chrono::high_resolution_clock::now();
+                first = false;
             }
             index++;
         }
@@ -129,48 +136,17 @@ class EmitterSQ {
         }
     }
 
-    ///  @brief This function extract the feedback from the feedback queue
-    ///  and based on this feedback changes the number of currently active workers.
-    ///  The function set the worker that send the message as available.
-    // void receiveFeedback() {
-    //     if (!this->feedbackQueue->isEmpty()) {
-    //         Feedback *tmpF;
-    //         tmpF = this->feedbackQueue->safe_pop();
-    //         if (tmpF) {
-    //             Feedback *f = reinterpret_cast<Feedback *>(tmpF);
-
-    //             if (f->newNumberOfWorkers != currentNumWorker) {
-    //                 this->prevNumWorker = this->currentNumWorker;
-    //                 this->currentNumWorker = f->newNumberOfWorkers;
-    //                 this->currentNumWorker < this->prevNumWorker
-    //                     ? checkSleep()
-    //                     : checkWakeUp();
-    //             }
-    //         }
-    //     }
-    // }
-
-    // ///  @brief This function extract the feedback from the feedback queue
-    // ///  and based on this feedback changes the number of currently active workers.
-    // ///  The function set the worker that send the message as available.
-    // void receiveFeedbackWorker() {
-    //     Feedback *tmpF;
-    //     if (!this->feedbackQueueWorker->isEmpty()) {
-    //         tmpF = this->feedbackQueueWorker->safe_pop();
-    //         if (tmpF) {
-    //             Feedback *f = reinterpret_cast<Feedback *>(tmpF);
-    //             activeWorkers[f->senderID] = 1;
-    //         }
-    //     }
-    // }
-
     void readFeedback(Feedback *f) {
-        if (f->newNumberOfWorkers != currentNumWorker && f->newNumberOfWorkers > 0) {
-            this->prevNumWorker = this->currentNumWorker;
-            this->currentNumWorker = f->newNumberOfWorkers;
-            this->currentNumWorker < this->prevNumWorker
-                ? checkSleep()
-                : checkWakeUp();
+        std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - lastUpdate;
+        int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+        if (elapsedINT > stopTime || first) {
+            if (f->newNumberOfWorkers != currentNumWorker && f->newNumberOfWorkers > 0) {
+                this->prevNumWorker = this->currentNumWorker;
+                this->currentNumWorker = f->newNumberOfWorkers;
+                this->currentNumWorker < this->prevNumWorker
+                    ? checkSleep()
+                    : checkWakeUp();
+            }
         }
     }
 
@@ -214,6 +190,7 @@ class EmitterSQ {
         int index = 0;
         std::chrono::high_resolution_clock::time_point start;
         std::chrono::high_resolution_clock::time_point end;
+        lastUpdate = std::chrono::high_resolution_clock::now();
 
         while (i < inputVector.size()) {
             start = std::chrono::high_resolution_clock::now();
@@ -242,7 +219,7 @@ class EmitterSQ {
     ///  @param nWorker        The initial number of active workers
     ///  @param FeedbackQueue  The feedback queue used to send back a feedback to the emitter
     ///  @param inputVector    Input Vector with the tasks that has to be computed
-    EmitterSQ(std::vector<SafeQueue<Task<T, U> *> *> *outputQueue, std::vector<WorkerSQ<T, U> *> workerQueue, int nWorker, SafeQueue<Feedback *> *feedbackQueue, std::vector<Task<T, U> *> inputVector, SafeQueue<Feedback *> *feedbackQueueWorker, bool collector, std::atomic<int> *timeEmitter) {
+    EmitterSQ(std::vector<SafeQueue<Task<T, U> *> *> *outputQueue, std::vector<WorkerSQ<T, U> *> workerQueue, int nWorker, SafeQueue<Feedback *> *feedbackQueue, std::vector<Task<T, U> *> inputVector, SafeQueue<Feedback *> *feedbackQueueWorker, bool collector, std::atomic<int> *timeEmitter, int time) {
         this->outputQueue = outputQueue;
 
         this->workerQueue = workerQueue;
@@ -263,6 +240,7 @@ class EmitterSQ {
         }
         this->collector = collector;
         this->timeEmitter = timeEmitter;
+        this->stopTime = time;
     }
 
     ///  @brief Start the thread of the emitter componentend.

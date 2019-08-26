@@ -43,6 +43,10 @@ struct EmitterFF : ff_monode_t<Task<T, U>, Task<T, U>> {
 
     bool eosReceived = false;
 
+    std::chrono::high_resolution_clock::time_point lastUpdate;
+    int stopTime;
+    bool first = true;
+
     ///  @brief This function return the index of first active worker
     ///  @return The index of the first active worker
     int
@@ -117,29 +121,21 @@ struct EmitterFF : ff_monode_t<Task<T, U>, Task<T, U>> {
     ///  @return Void
     void checkWakeUp(Task<T, U> *task) {
         if (task->newWorkingThreads > this->nWorkers) {
-            if (count == 0) {
-                x = task->newWorkingThreads;
-                count = 1;
+            if (task->newWorkingThreads > this->maxWorkers) {
+                this->nWorkers = this->maxWorkers;
             } else {
-                task->newWorkingThreads == x ? count++ : count = 0;
+                this->nWorkers = task->newWorkingThreads;
             }
-
-            if (count == 2) {
-                if (task->newWorkingThreads > this->maxWorkers) {
-                    this->nWorkers = this->maxWorkers;
-                } else {
-                    this->nWorkers = task->newWorkingThreads;
+            unsigned int index = 0;
+            while (sleeping + this->nWorkers != this->maxWorkers && index < sleepingWorkers.size()) {
+                if (sleepingWorkers[index] == 1) {
+                    wakeUpWorker(index);
+                    lastUpdate = std::chrono::high_resolution_clock::now();
+                    first = false;
                 }
-
-                unsigned int index = 0;
-                while (sleeping + this->nWorkers != this->maxWorkers && index < sleepingWorkers.size()) {
-                    if (sleepingWorkers[index] == 1) {
-                        wakeUpWorker(index);
-                    }
-                    index++;
-                }
-                count = 0;
+                index++;
             }
+            count = 0;
         }
     }
     ///  @brief This function check if we have to send a sleep signal to
@@ -148,29 +144,22 @@ struct EmitterFF : ff_monode_t<Task<T, U>, Task<T, U>> {
     ///  @return Void
     void checkSleep(Task<T, U> *task) {
         if (task->newWorkingThreads < this->nWorkers) {
-            if (count == 0) {
-                x = task->newWorkingThreads;
-                count = 1;
+            if (task->newWorkingThreads == 0) {
+                this->nWorkers = 1;
             } else {
-                task->newWorkingThreads == x ? count++ : count = 0;
+                this->nWorkers = task->newWorkingThreads;
             }
 
-            if (count == 2) {
-                if (task->newWorkingThreads == 0) {
-                    this->nWorkers = 1;
-                } else {
-                    this->nWorkers = task->newWorkingThreads;
+            unsigned int index = 0;
+            while (sleeping + this->nWorkers < this->maxWorkers && index < sleepingWorkers.size()) {
+                if (sleepingWorkers[index] == 0 && activeWorkers[index] == 1) {
+                    setSleeping(index);
+                    lastUpdate = std::chrono::high_resolution_clock::now();
+                    first = false;
                 }
-
-                unsigned int index = 0;
-                while (sleeping + this->nWorkers < this->maxWorkers && index < sleepingWorkers.size()) {
-                    if (sleepingWorkers[index] == 0 && activeWorkers[index] == 1) {
-                        setSleeping(index);
-                    }
-                    index++;
-                }
-                count = 0;
+                index++;
             }
+            count = 0;
         }
     }
 
@@ -181,12 +170,14 @@ struct EmitterFF : ff_monode_t<Task<T, U>, Task<T, U>> {
     ///  @param *ff_loadbalancer The load balancer of the emitter
     ///  @param int              The initial (and maximum) number of Worker
     ///  @param int              The number of tasks to be computed
-    EmitterFF(ff_loadbalancer *const lb, int nWorkers, int nTask) : lb(lb) {
+    EmitterFF(ff_loadbalancer *const lb, int nWorkers, int nTask, int time) : lb(lb) {
         this->nWorkers = nWorkers;
         this->nTask = nTask;
         this->maxWorkers = nWorkers;
         this->sleeping = 0;
         this->x = nWorkers;
+        this->stopTime = time;
+        std::cout << stopTime << std::endl;
     }
 
     int svc_init() {
@@ -203,6 +194,8 @@ struct EmitterFF : ff_monode_t<Task<T, U>, Task<T, U>> {
             sleepingWorkers.push_back(0);
         }
         this->lastWorker = this->get_num_outchannels();
+        lastUpdate = std::chrono::high_resolution_clock::now();
+
         return 0;
     }
     bool finish = false;
@@ -231,12 +224,18 @@ struct EmitterFF : ff_monode_t<Task<T, U>, Task<T, U>> {
             //std::cout << "ricevuto feedback da " << wid << std::endl;
             setFree(wid);
             received++;
-            // wake up one or more worker based on the information of the feedback
-            checkWakeUp(task);
 
-            // send a sleep to one or more worker based on the information of the feedback
-            checkSleep(task);
+            std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - lastUpdate;
+            int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
 
+            if (elapsedINT > stopTime || first) {
+                std::cout << "MAGGIORE" << std::endl;
+                // wake up one or more worker based on the information of the feedback
+                checkWakeUp(task);
+
+                // send a sleep to one or more worker based on the information of the feedback
+                checkSleep(task);
+            }
             /*
                 I have to check if there are some tasks in the temporary queue.
                 If there are some tasks i send one (or more) task to a worker.

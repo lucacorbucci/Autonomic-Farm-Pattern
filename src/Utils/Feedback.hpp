@@ -23,23 +23,13 @@ int createFeedback(int newNWorker, int &currentWorkers, int &count, int &x, int 
     int n = -1;
 
     if (newNWorker != currentWorkers) {
-        if (count == 0) {
-            x = newNWorker;
-            count = 1;
+        currentWorkers = newNWorker;
+        if (newNWorker == 0) {
+            n = 1;
+        } else if (newNWorker > maxWorkers) {
+            n = maxWorkers;
         } else {
-            newNWorker == x ? count++ : count = 0;
-        }
-
-        if (count == 2) {
-            currentWorkers = newNWorker;
-            if (newNWorker == 0) {
-                n = 1;
-            } else if (newNWorker > maxWorkers) {
-                n = maxWorkers;
-            } else {
-                n = newNWorker;
-            }
-            count = 0;
+            n = newNWorker;
         }
     }
     return n;

@@ -4,14 +4,14 @@ import sys
 
 
 if(len(sys.argv) > 2):
-    x = np.arange(100)
+    x = np.arange(1000)
     y = []
     with open(sys.argv[1]) as file:
         for line in file:
             arrayLine = line.strip('\n')
             y.append(int(arrayLine))
 
-    plt.axhline(y=1000, color='r', linestyle='-')
+    plt.axhline(y=1200, color='r', linestyle='-')
 
     plt.plot(x, y)
 
