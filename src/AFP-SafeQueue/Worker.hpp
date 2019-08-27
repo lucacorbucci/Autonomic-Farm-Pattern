@@ -46,20 +46,13 @@ class WorkerSQ {
     int maxWorkers;
     int tsGoal;
     std::atomic<int> *timeEmitter;
+    std::string debugStr;
 
     ///  @brief Put this thread in sleep
     ///  @return Void
     void sleep() {
         this->waitCondition->wait(*lock);
     }
-
-    // ///  @brief Create a feedback with the number of workers that we want to use
-    // ///  @return The feedback to be sent
-    // Feedback createFeedback() {
-    //     Feedback f;
-    //     f.senderID = ID;
-    //     return f;
-    // }
 
     ///  @brief Create a feedback with the number of workers that we want to use
     ///  @returns Void
@@ -81,8 +74,11 @@ class WorkerSQ {
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
         int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        //std::cout << TS << std::endl;
-        //std::cout << "Value " << t->value << " elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << t->workingThreads << " new number of workers: " << newNWorker << std::endl;
+        if (debugStr == "true") {
+            std ::cout << "Calcolato " << t->value << " Con " << t->workingThreads << " in " << elapsedINT << " myTS: " << TS << " Ideal TS " << this->tsGoal << " New NWorkers " << newNWorker << " da " << this->ID << std::endl;
+        } else if (debugStr == "ts") {
+            std::cout << TS << std::endl;
+        }
     }
 
     ///  @brief Wake up a sleeping worker
@@ -130,7 +126,7 @@ class WorkerSQ {
     ///  @param fun          The function to be computed
     ///  @param inputQueue   The queue from which the worker extract the task to be computed
     ///  @param outputQueue  The queue where the worker push the computed task
-    WorkerSQ(int ID, std::function<T(U x)> fun, SafeQueue<Task<T, U> *> *inputQueue, SafeQueue<Task<T, U> *> *outputQueue, SafeQueue<Feedback *> *feedbackQueueWorker, bool collector, int activeWorkers, int tsGoal, std::atomic<int> *timeEmitter) {
+    WorkerSQ(int ID, std::function<T(U x)> fun, SafeQueue<Task<T, U> *> *inputQueue, SafeQueue<Task<T, U> *> *outputQueue, SafeQueue<Feedback *> *feedbackQueueWorker, bool collector, int activeWorkers, int tsGoal, std::atomic<int> *timeEmitter, std::string debugStr) {
         this->function = fun;
         this->inputQueue = inputQueue;
         this->outputQueue = outputQueue;
@@ -144,6 +140,7 @@ class WorkerSQ {
         this->currentWorkers = activeWorkers;
         this->maxWorkers = activeWorkers;
         this->timeEmitter = timeEmitter;
+        this->debugStr = debugStr;
     }
 
     ///  @brief This function starts the Worker and computes the task

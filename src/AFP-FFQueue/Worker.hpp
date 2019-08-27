@@ -47,6 +47,7 @@ class Worker {
     int currentWorkers;
     int maxWorkers;
     std::atomic<int> *timeEmitter;
+    std::string debugStr;
 
     ///  @brief Put this thread in sleep
     ///  @return Void
@@ -75,9 +76,11 @@ class Worker {
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
         int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        //std::cout << TS << std::endl;
-        std ::cout << "Calcolato " << t->value << " Con " << t->workingThreads << " in " << elapsedINT << " myTS: " << TS << " Ideal TS " << this->tsGoal << " New NWorkers " << newNWorker << " da " << this->ID << std::endl;
-        //std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << t->workingThreads << " new number of workers: " << newNWorker << std::endl;
+        if (debugStr == "true") {
+            std ::cout << "Calcolato " << t->value << " Con " << t->workingThreads << " in " << elapsedINT << " myTS: " << TS << " Ideal TS " << this->tsGoal << " New NWorkers " << newNWorker << " da " << this->ID << std::endl;
+        } else if (debugStr == "ts") {
+            std::cout << TS << std::endl;
+        }
     }
 
     ///  @brief Wake up a sleeping worker
@@ -127,7 +130,7 @@ class Worker {
     ///  @param fun          The function to be computed
     ///  @param inputQueue   The queue from which the worker extract the task to be computed
     ///  @param outputQueue  The queue where the worker push the computed task
-    Worker(int ID, std::function<T(U x)> fun, SWSR_Ptr_Buffer *inputQueue, uMPMC_Ptr_Queue *outputQueue, uMPMC_Ptr_Queue *feedbackQueueWorker, bool collector, int activeWorkers, int tsGoal, std::atomic<int> *timeEmitter) {
+    Worker(int ID, std::function<T(U x)> fun, SWSR_Ptr_Buffer *inputQueue, uMPMC_Ptr_Queue *outputQueue, uMPMC_Ptr_Queue *feedbackQueueWorker, bool collector, int activeWorkers, int tsGoal, std::atomic<int> *timeEmitter, std::string debugStr) {
         this->function = fun;
         this->inputQueue = inputQueue;
         this->outputQueue = outputQueue;
@@ -141,6 +144,7 @@ class Worker {
         this->currentWorkers = activeWorkers;
         this->maxWorkers = activeWorkers;
         this->timeEmitter = timeEmitter;
+        this->debugStr = debugStr;
     }
 
     ///  @brief This function starts the Worker and computes the task

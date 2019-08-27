@@ -229,7 +229,6 @@ struct EmitterFF : ff_monode_t<Task<T, U>, Task<T, U>> {
             int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
 
             if (elapsedINT > stopTime || first) {
-                std::cout << "MAGGIORE" << std::endl;
                 // wake up one or more worker based on the information of the feedback
                 checkWakeUp(task);
 

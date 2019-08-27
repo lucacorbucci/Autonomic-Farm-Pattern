@@ -32,7 +32,7 @@ class AutonomicFarmFF {
     // Function to be computed
     std::function<T(U x)> function;
     int time;
-
+    std::string debug;
     ///  @brief Send a sleep signal to a thread
     ///  @param int Size of the input Vector
     ///  @param int Integer contained in the first part of the input vector
@@ -66,7 +66,7 @@ class AutonomicFarmFF {
     ///  @param int Integer contained in the third part of the input vector
     ///  @param fun Function to be computed
     ///  @return Void
-    AutonomicFarmFF(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, std::function<T(U x)> fun, int time) {
+    AutonomicFarmFF(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, std::function<T(U x)> fun, int time, std::string debug) {
         this->nWorker = nWorker;
         this->tsGoal = tsGoal;
         this->inputSize = inputSize;
@@ -75,6 +75,7 @@ class AutonomicFarmFF {
         this->n3 = input3;
         this->function = fun;
         this->time = time;
+        this->debug = debug;
     }
 
     ///  @brief Start the execution of the farm
@@ -82,7 +83,7 @@ class AutonomicFarmFF {
         // I create the vector with all the workers
         std::vector<ff_node *> w;
         for (int i = 0; i < nWorker; i++)
-            w.push_back(new WorkerFF<T, U>(this->function, i, tsGoal));
+            w.push_back(new WorkerFF<T, U>(this->function, i, tsGoal, debug));
 
         // Fill the vector with input task
         std::vector<Task<T, U> *> inputVector = fillVector(inputSize, n1, n2, n3);

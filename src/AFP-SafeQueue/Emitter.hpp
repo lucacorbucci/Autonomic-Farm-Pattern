@@ -109,7 +109,7 @@ class EmitterSQ {
     void checkSleep() {
         int index = 0;
         while (sleeping + this->currentNumWorker < this->maxnWorker && index < activeWorkers.size()) {
-            if (sleepingWorkers[index] == 0 && activeWorkers[index] == 1) {
+            if (sleepingWorkers[index] == 0) {  // && activeWorkers[index] == 1) {
                 setSleeping(index);
                 lastUpdate = std::chrono::high_resolution_clock::now();
                 first = false;

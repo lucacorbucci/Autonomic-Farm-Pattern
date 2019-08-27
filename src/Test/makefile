@@ -12,7 +12,7 @@ CXXFLAGS  	= -g
 LDFLAGS 	= -pthread
 OPTFLAGS	= -O3 -finline-functions -DNDEBUG -g
 
-TARGETS		= ./mainFib
+TARGETS		=  ./mainPrime
 
 .PHONY: all clean cleanall
 .SUFFIXES: .cpp

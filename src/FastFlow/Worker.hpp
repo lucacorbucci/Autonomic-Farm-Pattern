@@ -20,6 +20,7 @@ struct WorkerFF : ff_monode_t<Task<T, U>> {
     // ID of the worker
     int ID;
     int tsGoal;
+    std::string debugStr;
 
     ///  @brief Change the number of workers that we want to have in the farm
     ///  based on the elapsed time and the TsGoal.
@@ -29,8 +30,11 @@ struct WorkerFF : ff_monode_t<Task<T, U>> {
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
         int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        std ::cout << "Calcolato " << t->value << " Con " << t->workingThreads << " in " << elapsedINT << " myTS: " << TS << " Ideal TS " << this->tsGoal << " New NWorkers " << newNWorker << " da " << this->ID << std::endl;
-        //std::cout << TS << std::endl;
+        if (debugStr == "true") {
+            std ::cout << "Calcolato " << t->value << " Con " << t->workingThreads << " in " << elapsedINT << " myTS: " << TS << " Ideal TS " << this->tsGoal << " New NWorkers " << newNWorker << " da " << this->ID << std::endl;
+        } else if (debugStr == "ts") {
+            std::cout << TS << std::endl;
+        }
         t->newWorkingThreads = newNWorker;
     }
 
@@ -40,10 +44,11 @@ struct WorkerFF : ff_monode_t<Task<T, U>> {
     ///  @param int Worker's ID
     ///  @param int Expected service time
 
-    WorkerFF(std::function<T(U x)> fun, int ID, int tsGoal) {
+    WorkerFF(std::function<T(U x)> fun, int ID, int tsGoal, std::string debugStr) {
         this->fun = fun;
         this->ID = ID;
         this->tsGoal = tsGoal;
+        this->debugStr = debugStr;
     }
 
     Task<T, U> *svc(Task<T, U> *t) {

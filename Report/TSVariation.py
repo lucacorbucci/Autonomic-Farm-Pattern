@@ -11,7 +11,13 @@ if(len(sys.argv) > 2):
             arrayLine = line.strip('\n')
             y.append(int(arrayLine))
 
-    plt.axhline(y=1200, color='r', linestyle='-')
+    sum = 0
+    # Compute avg
+    for item in y:
+        sum += item
+    print(sum/1000)
+
+    plt.axhline(y=400, color='r', linestyle='-')
 
     plt.plot(x, y)
 
