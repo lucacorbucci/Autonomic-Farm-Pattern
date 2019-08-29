@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 // clang-format off
 #include <unistd.h>
 #include <iostream>
@@ -11,7 +16,10 @@
 
 using namespace ff;
 
-///  @brief Implementation of the emitter of the farm
+///  @brief Implementation of the Emitter of the autonomic farm
+///  @detail Typename T is used as output type of the function that
+///  the worker will compute. Typename U as output type of the function
+///  that the worker will compute.
 template <typename T, typename U>
 struct EmitterFF : ff_monode_t<Task<T, U>, Task<T, U>> {
    private:

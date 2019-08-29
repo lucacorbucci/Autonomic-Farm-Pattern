@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 // clang-format off
 #include <unistd.h>
 #include <functional>
@@ -25,8 +30,8 @@ using namespace ff;
 #define STOPPED false;
 
 ///  @brief Implementation of the Worker of the autonomic farm
-///  @detail Typename T is used for as output type of the function that
-///  the worker will compute. Typename U is input as output type of the function
+///  @detail Typename T is used as output type of the function that
+///  the worker will compute. Typename U as output type of the function
 ///  that the worker will compute.
 template <class T, class U>
 class Worker {
@@ -51,8 +56,7 @@ class Worker {
 
     ///  @brief Put this thread in sleep
     ///  @return Void
-    void
-    sleep() {
+    void sleep() {
         this->waitCondition->wait(*lock);
     }
 
@@ -61,7 +65,7 @@ class Worker {
     void sendFeedback(int newNWorker) {
         Feedback f;
         if (!collector) {
-            int n = createFeedback(newNWorker, currentWorkers, count, x, maxWorkers);
+            int n = createFeedback(newNWorker, currentWorkers, maxWorkers);
             if (n > 0)
                 f.newNumberOfWorkers = n;
         }
@@ -83,9 +87,9 @@ class Worker {
         }
     }
 
-    ///  @brief Wake up a sleeping worker
+    ///  @brief Worker's code
     ///  @details
-    ///  This function pop an item from the input queue.
+    ///  This function pop an item from the input queue and then compute the corresponding task
     ///
     ///  @return Returns -1 if it is the last item of the queue and i have to kill
     ///  the worker. In this case i send a Task with value -1 to the collector.
@@ -96,27 +100,42 @@ class Worker {
         if (!inputQueue->empty()) {
             if (inputQueue->pop(&tmpTask)) {
                 Task<T, U> *t = reinterpret_cast<Task<T, U> *>(tmpTask);
-
                 t->startingTime = std::chrono::high_resolution_clock::now();
+
                 if (t->end == -1) {
-                    outputQueue->push(t);
+                    if (collector) {
+                        outputQueue->push(t);
+                    } else {
+                        delete (t);
+                    }
                     return -1;
                 } else {
+                    // Compute the function
                     t->result = this->function(t->value);
-                    t->endingTime = std::chrono::high_resolution_clock::now();
-                    std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
-                    int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-                    int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
                     int newNWorker;
-                    if (*timeEmitter > TS)
-                        newNWorker = round(float(*timeEmitter) / this->tsGoal);
-                    else
-                        newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
+                    t->endingTime = std::chrono::high_resolution_clock::now();
 
-                    outputQueue->push(t);
+                    /*
+                        Without the collector i have to compute here the new 
+                        number of worker and i send to the emitter this value
+                    */
+                    if (collector) {
+                        outputQueue->push(t);
+                    } else {
+                        std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
+                        int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
+                        if (*timeEmitter > TS)
+                            newNWorker = round(float(*timeEmitter) / this->tsGoal);
+                        else
+                            newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
+                    }
+
                     debug(t);
+                    // Send the ack to the emitter
                     sendFeedback(newNWorker);
-
+                    if (!collector) {
+                        delete (t);
+                    }
                     return 1;
                 }
             }
@@ -127,9 +146,16 @@ class Worker {
    public:
     std::thread *workerThread;
     ///  @brief Constructor method of the Worker component
-    ///  @param fun          The function to be computed
-    ///  @param inputQueue   The queue from which the worker extract the task to be computed
-    ///  @param outputQueue  The queue where the worker push the computed task
+    ///  @param ID              Worker's ID
+    ///  @param fun             The function to be computed
+    ///  @param inputQueue      The queue from which the worker extract the task to be computed
+    ///  @param outputQueue     The queue where the worker push the computed task
+    ///  @param feedbackQueue   The queue where the worker push the ack for the emitter
+    ///  @param collector       True if we use the collector, false otherwise
+    ///  @param activeWorkers   Initial number of workers
+    ///  @param tsGoal          Expected service time
+    ///  @param timeEmitter     Emitter's service time
+    ///  @param debugStr        String used to print some informations during the execution of the farm
     Worker(int ID, std::function<T(U x)> fun, SWSR_Ptr_Buffer *inputQueue, uMPMC_Ptr_Queue *outputQueue, uMPMC_Ptr_Queue *feedbackQueueWorker, bool collector, int activeWorkers, int tsGoal, std::atomic<int> *timeEmitter, std::string debugStr) {
         this->function = fun;
         this->inputQueue = inputQueue;
@@ -151,13 +177,14 @@ class Worker {
     ///  @return Void
     void start() {
         this->workerThread = new std::thread([=] {
-            int exit = 0;
             while (compute() != -1) {
                 while (!isActive()) {
                     sleep();
                 }
-                if (exit == 1) break;
             }
+            delete (lock);
+            delete (d_mutex);
+            delete (waitCondition);
         });
     }
 
@@ -185,9 +212,5 @@ class Worker {
     ///  @return Void
     void join() {
         this->workerThread->join();
-    }
-
-    int printID() {
-        return this->ID;
     }
 };

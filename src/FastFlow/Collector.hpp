@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 // clang-format off
 #include <unistd.h>
 #include <iostream>
@@ -19,8 +24,8 @@ struct CollectorFF : ff_minode_t<Task<T, U>, void> {
     int tsGoal;
 
    public:
-    // In this vector I store the results of the service time
-    std::vector<Task<T, U> *> results;
+    // In this vector I store the results
+    std::vector<T> results;
 
     ///  @brief Collector's constructor
     CollectorFF(int tsGoal) {
@@ -32,7 +37,8 @@ struct CollectorFF : ff_minode_t<Task<T, U>, void> {
             The collector receives the task and put the result of the computation
             in the results vector.
         */
-        results.push_back(t);
+        results.push_back(t->result);
+        delete (t);
         return this->GO_ON;
     }
 

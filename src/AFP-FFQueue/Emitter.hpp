@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 // clang-format off
 #include <unistd.h>
 #include <iostream>
@@ -9,8 +14,8 @@
 using namespace ff;
 
 ///  @brief Implementation of the Emitter of the autonomic farm
-///  @detail Typename T is used for as output type of the function that
-///  the worker will compute. Typename U is input as output type of the function
+///  @detail Typename T is used as output type of the function that
+///  the worker will compute. Typename U as output type of the function
 ///  that the worker will compute.
 template <class T, class U>
 class Emitter {
@@ -44,23 +49,18 @@ class Emitter {
     int currentNumWorker;
     ///  @brief Number of workers that worked in the previous iteration
     int prevNumWorker;
-
     bool collector;
-
     int x;
     int count = 0;
     uMPMC_Ptr_Queue *feedbackQueueWorker;
-
     std::atomic<int> *timeEmitter;
-
     std::chrono::high_resolution_clock::time_point lastUpdate;
     int stopTime;
     bool first = true;
 
     ///  @brief This function return the index of first active worker
     ///  @return The index of the first active worker
-    int
-    getFirstActive() {
+    int getFirstActive() {
         for (unsigned int i = this->lastWorker; i < activeWorkers.size(); i++) {
             if (activeWorkers[i] == 1 && sleepingWorkers[i] == 0) {
                 this->lastWorker = i;
@@ -137,10 +137,16 @@ class Emitter {
             task->end = -1;
             if (outputQueue[sent]->push(task)) {
                 sent++;
+            } else {
+                delete (task);
             }
         }
     }
 
+    ///  @brief This function takes the received feedback and extract the
+    ///  informations about the new number of worker.
+    ///  @param Feedback   The feedback from which we have to extract the information
+    ///  @return Void
     void readFeedback(Feedback *f) {
         std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - lastUpdate;
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
@@ -156,8 +162,6 @@ class Emitter {
     }
 
     ///  @brief This function extract the feedback from the feedback queue
-    ///  and based on this feedback changes the number of currently active workers.
-    ///  The function set the worker that send the message as available.
     void receiveFeedback() {
         // In this case we have the collector
         if (!this->feedbackQueue->empty() && collector) {
@@ -186,9 +190,6 @@ class Emitter {
     ///  @details
     ///  This function extracts a task from the input vector and push this task
     ///  to the input spsc queue of an active worker.
-    ///  This function also extracts  a feedback from the spsc queue connected with
-    ///  the collector  and based on this feedback send a sleep or a wake up signal
-    ///  to one of the workers.
     ///  @return Void
     void threadBody() {
         unsigned int i = 0;
@@ -221,11 +222,15 @@ class Emitter {
 
    public:
     ///  @brief Constructor method of the Emitter component
-    ///  @param *outputQueue   The queue where the emitter send a new task
-    ///  @param workerQueue    The workers's queue
-    ///  @param nWorker        The initial number of active workers
-    ///  @param FeedbackQueue  The feedback queue used to send back a feedback to the emitter
-    ///  @param inputVector    Input Vector with the tasks that has to be computed
+    ///  @param *outputQueue        The queue where the emitter send a new task
+    ///  @param workerQueue         The workers's queue
+    ///  @param nWorker             The initial number of active workers
+    ///  @param FeedbackQueue       The feedback queue used to send back a feedback to the emitter
+    ///  @param inputVector         Input Vector with the tasks that has to be computed
+    ///  @param FeedbackQueueWorker The feedback queue used to send back a feedback to the emitter from the worker
+    ///  @param collector           True if we want to use the collector, false otherwise
+    ///  @param timeEmitter         Emitter's service time
+    ///  @param time                This is time that we have to wait to change the number of workers of the farm
     Emitter(std::vector<SWSR_Ptr_Buffer *> outputQueue, std::vector<Worker<T, U> *> workerQueue, int nWorker, uSWSR_Ptr_Buffer *feedbackQueue, std::vector<Task<T, U> *> inputVector, uMPMC_Ptr_Queue *feedbackQueueWorker, bool collector, std::atomic<int> *timeEmitter, int time) {
         this->outputQueue = outputQueue;
         this->workerQueue = workerQueue;
@@ -251,7 +256,7 @@ class Emitter {
 
     ///  @brief Start the thread of the emitter componentend.
     ///  @return Void
-    void start(std::vector<Worker<T, U> *> workQueue) {
+    void start() {
         this->emitterThread = std::thread([=] {
             threadBody();
         });

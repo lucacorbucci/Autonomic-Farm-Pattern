@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 // clang-format off
 #include <unistd.h>
 #include <iostream>
@@ -56,6 +61,8 @@ class CollectorSQ {
     ///  @param activeWorkers The initial number of active workers
     ///  @param TsGoal        The expected service time
     ///  @param FeedbackQueue The feedback queue used to send back a feedback to the emitter
+    ///  @param timeEmitter   Emitter's service time
+    ///  @param timeCollector Collector's service time
    public:
     CollectorSQ(SafeQueue<Task<T, U> *> *inputQueue, int activeWorkers, int tsGoal, SafeQueue<Feedback *> *feedbackQueue, std::atomic<int> *timeEmitter, std::atomic<int> *timeCollector) {
         this->inputQueue = inputQueue;
@@ -69,22 +76,11 @@ class CollectorSQ {
         this->timeCollector = timeCollector;
     }
 
+    ///  @brief This method is used to create and send the feedback from the collector to the emitter
+    ///  @param newNWorker  The new number of workers
     void sendFeedback(int newNWorker) {
-        if (newNWorker != currentWorkers) {
-            if (count == 0) {
-                x = newNWorker;
-                count = 1;
-            } else {
-                newNWorker == x ? count++ : count = 0;
-            }
-
-            if (count == 2) {
-                currentWorkers = newNWorker;
-                Feedback f = createFeedback(newNWorker);
-                this->feedbackQueue->safe_push(&f);
-                count = 0;
-            }
-        }
+        Feedback f = createFeedback(newNWorker);
+        this->feedbackQueue->safe_push(&f);
     }
 
     ///  @brief Start the collector componentend.
@@ -99,7 +95,6 @@ class CollectorSQ {
         // std::cout << "collector avviato" << std::endl;
         this->collectorThread = std::thread([=] {
             int counter = 0;
-            int c = 0;
             while (true) {
                 void *tmpTask;
                 //I have to check if the queue is empty or not.
@@ -113,7 +108,6 @@ class CollectorSQ {
                             if (counter == this->activeWorkers) break;
                         } else {
                             std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
-                            int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
                             int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
                             int newNWorker;
                             if (*timeEmitter > *timeCollector) {

@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 // clang-format off
 #include <unistd.h>
 #include <iostream>
@@ -46,6 +51,8 @@ class Collector {
     ///  @param activeWorkers The initial number of active workers
     ///  @param TsGoal        The expected service time
     ///  @param FeedbackQueue The feedback queue used to send back a feedback to the emitter
+    ///  @param timeEmitter   Emitter's service time
+    ///  @param timeCollector Collector's service time
    public:
     Collector(uMPMC_Ptr_Queue *inputQueue, int activeWorkers, int tsGoal, uSWSR_Ptr_Buffer *feedbackQueue, std::atomic<int> *timeEmitter, std::atomic<int> *timeCollector) {
         this->inputQueue = inputQueue;
@@ -59,9 +66,11 @@ class Collector {
         this->timeCollector = timeCollector;
     }
 
+    ///  @brief This method is used to create and send the feedback from the collector to the emitter
+    ///  @param newNWorker  The new number of workers
     void sendFeedback(int newNWorker) {
         Feedback f;
-        int n = createFeedback(newNWorker, currentWorkers, count, x, maxWorkers);
+        int n = createFeedback(newNWorker, currentWorkers, maxWorkers);
         if (n > 0)
             f.newNumberOfWorkers = n;
 
@@ -79,7 +88,6 @@ class Collector {
     void start() {
         this->collectorThread = std::thread([=] {
             int counter = 0;
-            int c = 0;
             std::chrono::high_resolution_clock::time_point start;
             std::chrono::high_resolution_clock::time_point end;
 
@@ -92,10 +100,10 @@ class Collector {
 
                     if (t->end == -1) {
                         counter++;
+                        delete (t);
                         if (counter == this->activeWorkers) break;
                     } else {
                         std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
-                        int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
                         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
                         int newNWorker;
                         if (*timeEmitter > *timeCollector) {
@@ -113,6 +121,7 @@ class Collector {
                         sendFeedback(newNWorker);
 
                         accumulator.push_back(t->result);
+                        delete (t);
                     }
                 }
                 end = std::chrono::high_resolution_clock::now();

@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 // clang-format off
 #include <unistd.h>
 #include <iostream>
@@ -19,36 +24,38 @@ using namespace ff;
 
 ///  @brief Implementation of the Autonomic Farm Patter
 ///  @detail Typename T is used for as output type of the function that
-///  the worker will compute. Typename U is input as output type of the function
+///  the worker will compute. Typename U is used as output type of the function
 ///  that the worker will compute.
 template <typename T, typename U>
 class AutonomicFarm {
    private:
     std::vector<SWSR_Ptr_Buffer*> inputQueues;
-    uMPMC_Ptr_Queue* outputQueue = new uMPMC_Ptr_Queue();
     std::vector<Worker<T, U>*> workerQueue;
+    std::vector<Task<T, U>*> inputVector;
+    uMPMC_Ptr_Queue* outputQueue = new uMPMC_Ptr_Queue();
     uSWSR_Ptr_Buffer* feedbackQueue;
     uMPMC_Ptr_Queue* feedbackQueueWorker;
-
     std::function<T(U x)> function;
-    std::vector<Task<T, U>*> inputVector;
     int nWorker;
     int tsGoal;
+    int time;
     bool collector;
     std::atomic<int>* timeEmitter = new std::atomic<int>(0);
     std::atomic<int>* tsCollector = new std::atomic<int>(0);
-    int time;
     std::string debug;
 
+   public:
     ///  @brief Constructor method of the AutonomicFarm Class
-    ///  @detail Typename T is used for as output type of the function that
-    ///  the worker will compute. Typename U is input as output type of the function
+    ///  @detail Typename T is used as output type of the function that
+    ///  the worker will compute. Typename U is used as output type of the function
     ///  that the worker will compute.
     ///  @param nWorker     Initial number of workers
-    ///  @param function    The function computing the single task in the autonomic farm
+    ///  @param function    The function that the worker will compute
     ///  @param tsGoal      Expected service time
     ///  @param inputVector Input Vector with the tasks that has to be computed
-   public:
+    ///  @param collector   True if we want to use the collector, false otherwise
+    ///  @param time        This is time that we have to wait to change the number of workers of the farm
+    ///  @param debug       This is used to print some informations during the execution of the farm
     AutonomicFarm(int nWorker, std::function<T(U x)> function, int tsGoal, std::vector<Task<T, U>*> inputVector, bool collector, int time, std::string debug) {
         this->nWorker = nWorker;
         this->function = function;
@@ -72,6 +79,7 @@ class AutonomicFarm {
     /// (emitter, workers, collector)
     ///  @return Void
     void start() {
+        // Creation of the communication channels
         for (int i = 0; i < this->nWorker; i++) {
             SWSR_Ptr_Buffer* b = new SWSR_Ptr_Buffer(1);
             if (!b->init()) {
@@ -80,10 +88,12 @@ class AutonomicFarm {
             inputQueues.push_back(b);
         }
 
+        // Creation of the workers
         for (int i = 0; i < this->nWorker; i++) {
             this->workerQueue.push_back(new Worker<T, U>{i, this->function, this->inputQueues[i], this->outputQueue, this->feedbackQueueWorker, collector, this->nWorker, this->tsGoal, timeEmitter, debug});
         }
 
+        // Creation of the emitter and the collector
         Emitter<T, U> e{this->inputQueues, workerQueue, nWorker, this->feedbackQueue, this->inputVector, this->feedbackQueueWorker, collector, timeEmitter, time};
         Collector<T, U>* c;
         if (collector) {
@@ -91,7 +101,7 @@ class AutonomicFarm {
         }
 
         {
-            utimer t("Tempo Completo");
+            utimer t("Tempo");
             if (collector) {
                 c->start();
             }
@@ -99,7 +109,7 @@ class AutonomicFarm {
                 this->workerQueue[i]->start();
             }
 
-            e.start(workerQueue);
+            e.start();
 
             for (int i = 0; i < this->nWorker; i++) {
                 this->workerQueue[i]->join();
@@ -109,6 +119,21 @@ class AutonomicFarm {
             if (collector) {
                 c->join();
             }
+        }
+
+        for (int i = 0; i < nWorker; i++)
+            delete (inputQueues[i]);
+        for (int i = 0; i < nWorker; i++)
+            delete (workerQueue[i]->workerThread);
+        for (int i = 0; i < nWorker; i++)
+            delete (workerQueue[i]);
+        delete (feedbackQueue);
+        delete (outputQueue);
+        delete (feedbackQueueWorker);
+        delete (timeEmitter);
+        delete (tsCollector);
+        if (collector) {
+            delete (c);
         }
     }
 };

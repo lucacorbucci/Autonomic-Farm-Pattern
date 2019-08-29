@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 #pragma once
 #ifndef FEEDBACK_HPP
 #define FEEDBACK_HPP
@@ -19,7 +24,7 @@ struct Feedback {
 ///  @param int x
 ///  @param int maxWorkers
 ///  @return int The new number of workers
-int createFeedback(int newNWorker, int &currentWorkers, int &count, int &x, int maxWorkers) {
+int createFeedback(int newNWorker, int &currentWorkers, int maxWorkers) {
     int n = -1;
 
     if (newNWorker != currentWorkers) {

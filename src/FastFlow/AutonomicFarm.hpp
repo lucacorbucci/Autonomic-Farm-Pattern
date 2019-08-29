@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 // clang-format off
 #include <unistd.h>
 #include <iostream>
@@ -58,13 +63,15 @@ class AutonomicFarmFF {
 
    public:
     ///  @brief AutonomicFarm's constructor
-    ///  @param int Initial number of workers
-    ///  @param int Expected service time
-    ///  @param int Size of the input Vector
-    ///  @param int Integer contained in the first part of the input vector
-    ///  @param int Integer contained in the second part of the input vector
-    ///  @param int Integer contained in the third part of the input vector
-    ///  @param fun Function to be computed
+    ///  @param int     Initial number of workers
+    ///  @param int     Expected service time
+    ///  @param int     Size of the input Vector
+    ///  @param int     Integer contained in the first part of the input vector
+    ///  @param int     Integer contained in the second part of the input vector
+    ///  @param int     Integer contained in the third part of the input vector
+    ///  @param fun     Function to be computed
+    ///  @param int     Time: This is time that we have to wait to change the number of workers of the farm
+    ///  @param string  This is used to print some informations during the execution of the farm
     ///  @return Void
     AutonomicFarmFF(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, std::function<T(U x)> fun, int time, std::string debug) {
         this->nWorker = nWorker;
@@ -118,11 +125,10 @@ class AutonomicFarmFF {
         /*
             Get the output from the collector and print it
         */
-        std::vector<Task<T, U> *> results = c->results;
+        std::vector<T> results = c->results;
 
         for (auto item : results) {
             //std::cout << item->result << std::endl;
-            delete (item);
         }
 
         delete (c);

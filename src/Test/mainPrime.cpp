@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 // clang-format off
 #include <unistd.h>
 #include <iostream>
@@ -57,12 +62,14 @@ std::vector<Task<T, U>*> fillVector(int inputSize, U n1, U n2, U n3) {
 template <typename T, typename U>
 void init(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, int time, std::function<T(U x)> function, bool collector, bool safeQueue, bool fastFlow, std::string debug) {
     // Fill the vector with input task
-    std::vector<Task<T, U>*> inputVector = fillVector<T, U>(inputSize, std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
+    std::vector<Task<T, U>*> inputVector;
 
     if (fastFlow) {
         AutonomicFarmFF<T, U> f = AutonomicFarmFF<T, U>(nWorker, tsGoal, inputSize, std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), function, time, debug);
         f.start();
     } else {
+        inputVector = fillVector<T, U>(inputSize, std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
+
         // Create the farm
         if (safeQueue) {
             // SafeQueue

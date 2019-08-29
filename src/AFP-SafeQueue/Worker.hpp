@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 // clang-format off
 #include <unistd.h>
 #include <functional>
@@ -24,8 +29,8 @@
 #define STOPPED false;
 
 ///  @brief Implementation of the Worker of the autonomic farm
-///  @detail Typename T is used for as output type of the function that
-///  the worker will compute. Typename U is input as output type of the function
+///  @detail Typename T is used as output type of the function that
+///  the worker will compute. Typename U as output type of the function
 ///  that the worker will compute.
 template <class T, class U>
 class WorkerSQ {
@@ -59,7 +64,7 @@ class WorkerSQ {
     void sendFeedback(int newNWorker) {
         Feedback f;
         if (!collector) {
-            int n = createFeedback(newNWorker, currentWorkers, count, x, maxWorkers);
+            int n = createFeedback(newNWorker, currentWorkers, maxWorkers);
             if (n > 0)
                 f.newNumberOfWorkers = n;
         }
@@ -81,9 +86,9 @@ class WorkerSQ {
         }
     }
 
-    ///  @brief Wake up a sleeping worker
+    ///  @brief Worker's code
     ///  @details
-    ///  This function pop an item from the input queue.
+    ///  This function pop an item from the input queue and then compute the corresponding task
     ///
     ///  @return Returns -1 if it is the last item of the queue and i have to kill
     ///  the worker. In this case i send a Task with value -1 to the collector.
@@ -91,29 +96,41 @@ class WorkerSQ {
     ///  from the queue to the collector.
     int compute() {
         Task<T, U> *t;
-
         t = inputQueue->safe_pop();
+
         t->startingTime = std::chrono::high_resolution_clock::now();
         if (t->end == -1) {
-            outputQueue->safe_push(t);
+            if (collector)
+                outputQueue->safe_push(t);
+            else
+                delete (t);
             return -1;
         } else {
             t->result = this->function(t->value);
+            int newNWorker;
             t->endingTime = std::chrono::high_resolution_clock::now();
 
-            std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
-            int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-            int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
-            int newNWorker;
-            if (*timeEmitter > TS)
-                newNWorker = round(float(*timeEmitter) / this->tsGoal);
-            else
-                newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
+            /*
+                        Without the collector i have to compute here the new 
+                        number of worker and i send to the emitter this value
+            */
+            if (collector) {
+                outputQueue->safe_push(t);
+            } else {
+                std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
+                int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
+                if (*timeEmitter > TS)
+                    newNWorker = round(float(*timeEmitter) / this->tsGoal);
+                else
+                    newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
+            }
 
             debug(t);
-            outputQueue->safe_push(t);
-
+            // Send the ack to the emitter
             sendFeedback(newNWorker);
+            if (!collector) {
+                delete (t);
+            }
             return 1;
         }
 
@@ -123,9 +140,16 @@ class WorkerSQ {
    public:
     std::thread *workerThread;
     ///  @brief Constructor method of the Worker component
-    ///  @param fun          The function to be computed
-    ///  @param inputQueue   The queue from which the worker extract the task to be computed
-    ///  @param outputQueue  The queue where the worker push the computed task
+    ///  @param ID              Worker's ID
+    ///  @param fun             The function to be computed
+    ///  @param inputQueue      The queue from which the worker extract the task to be computed
+    ///  @param outputQueue     The queue where the worker push the computed task
+    ///  @param feedbackQueue   The queue where the worker push the ack for the emitter
+    ///  @param collector       True if we use the collector, false otherwise
+    ///  @param activeWorkers   Initial number of workers
+    ///  @param tsGoal          Expected service time
+    ///  @param timeEmitter     Emitter's service time
+    ///  @param debugStr        String used to print some informations during the execution of the farm
     WorkerSQ(int ID, std::function<T(U x)> fun, SafeQueue<Task<T, U> *> *inputQueue, SafeQueue<Task<T, U> *> *outputQueue, SafeQueue<Feedback *> *feedbackQueueWorker, bool collector, int activeWorkers, int tsGoal, std::atomic<int> *timeEmitter, std::string debugStr) {
         this->function = fun;
         this->inputQueue = inputQueue;

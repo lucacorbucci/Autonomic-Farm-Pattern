@@ -10,9 +10,9 @@ INCLUDES	= -I $(FF_ROOT) -I ./
 CXXFLAGS  	= -g
 
 LDFLAGS 	= -pthread
-OPTFLAGS	= -O3 -finline-functions -DNDEBUG -g
-
-TARGETS		=  ./mainPrime
+OPTFLAGS	= -O3 -finline-functions -DNDEBUG -g 
+#-Wall -pedantic -Wextra
+TARGETS		=  ./mainFib
 
 .PHONY: all clean cleanall
 .SUFFIXES: .cpp

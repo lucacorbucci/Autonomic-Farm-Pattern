@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 #pragma once
 #ifndef TASK_HPP
 #define TASK_HPP

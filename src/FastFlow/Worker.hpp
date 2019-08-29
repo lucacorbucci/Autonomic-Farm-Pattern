@@ -1,3 +1,8 @@
+/*
+    author: Luca Corbucci
+    student number: 516450
+*/
+
 // clang-format off
 #include <unistd.h>
 #include <iostream>
@@ -43,7 +48,7 @@ struct WorkerFF : ff_monode_t<Task<T, U>> {
     ///  @param fun Function to be computed
     ///  @param int Worker's ID
     ///  @param int Expected service time
-
+    ///  @param debugStr String used to print some informations during the execution of the farm
     WorkerFF(std::function<T(U x)> fun, int ID, int tsGoal, std::string debugStr) {
         this->fun = fun;
         this->ID = ID;
