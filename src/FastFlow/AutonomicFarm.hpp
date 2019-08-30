@@ -125,10 +125,11 @@ class AutonomicFarmFF {
         /*
             Get the output from the collector and print it
         */
-        std::vector<T> results = c->results;
+        std::vector<Task<T, U> *> results = c->results;
 
         for (auto item : results) {
             //std::cout << item->result << std::endl;
+            delete (item);
         }
 
         delete (c);

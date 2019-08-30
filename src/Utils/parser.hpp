@@ -11,8 +11,22 @@
 #include <iostream>
 #include <utility>
 
+struct NonValidValue : public std::exception {
+    const char* what() const throw() {
+        return "NonValidValue";
+    }
+};
+
 bool parser(std::string inputString) {
-    bool result = inputString == "true" ? true : false;
+    bool result;
+
+    if (inputString == "true") {
+        result = true;
+    } else if (inputString == "false") {
+        result = false;
+    } else {
+        throw NonValidValue();
+    }
     return result;
 }
 

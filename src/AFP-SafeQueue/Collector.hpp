@@ -99,7 +99,7 @@ class CollectorSQ {
                 void *tmpTask;
                 //I have to check if the queue is empty or not.
                 if (!inputQueue->isEmpty()) {
-                    if (tmpTask = inputQueue->safe_pop()) {
+                    if ((tmpTask = inputQueue->safe_pop())) {
                         Task<T, U> *t = reinterpret_cast<Task<T, U> *>(tmpTask);
 
                         if (t->end == -1) {

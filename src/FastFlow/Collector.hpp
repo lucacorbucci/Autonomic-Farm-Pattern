@@ -25,7 +25,7 @@ struct CollectorFF : ff_minode_t<Task<T, U>, void> {
 
    public:
     // In this vector I store the results
-    std::vector<T> results;
+    std::vector<Task<T, U> *> results;
 
     ///  @brief Collector's constructor
     CollectorFF(int tsGoal) {
@@ -37,8 +37,7 @@ struct CollectorFF : ff_minode_t<Task<T, U>, void> {
             The collector receives the task and put the result of the computation
             in the results vector.
         */
-        results.push_back(t->result);
-        delete (t);
+        results.push_back(t);
         return this->GO_ON;
     }
 

@@ -185,7 +185,6 @@ struct EmitterFF : ff_monode_t<Task<T, U>, Task<T, U>> {
         this->sleeping = 0;
         this->x = nWorkers;
         this->stopTime = time;
-        std::cout << stopTime << std::endl;
     }
 
     int svc_init() {

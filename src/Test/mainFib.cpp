@@ -36,45 +36,21 @@ int fib(int x) {
 ///  the worker will compute. Typename U is input as output type of the function
 ///  that the worker will compute.
 template <typename T, typename U>
-std::vector<Task<T, U>*> fillVector(int inputSize, U n1, U n2, U n3) {
-    std::vector<Task<T, U>*> inputVector;
-    inputVector.reserve(inputSize);
-    for (int i = 0; i < inputSize; i++) {
-        Task<T, U>* task = new Task<T, U>();
-        if (i > 2 * (inputSize / 3))
-            task->value = n3;
-        else if (i > (inputSize / 3)) {
-            task->value = n2;
-        } else {
-            task->value = n1;
-        }
-        inputVector.push_back(task);
-    }
-    return inputVector;
-}
-
-///  @detail Typename T is used for as output type of the function that
-///  the worker will compute. Typename U is input as output type of the function
-///  that the worker will compute.
-template <typename T, typename U>
 void init(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, int time, std::function<T(U x)> function, bool collector, bool safeQueue, bool fastFlow, std::string debug) {
     // Fill the vector with input task
-    std::vector<Task<T, U>*> inputVector;
 
     if (fastFlow) {
         AutonomicFarmFF<T, U> f = AutonomicFarmFF<T, U>(nWorker, tsGoal, inputSize, input1, input2, input3, function, time, debug);
         f.start();
     } else {
-        inputVector = fillVector<T, U>(inputSize, input1, input2, input3);
-
         // Create the farm
         if (safeQueue) {
             // SafeQueue
-            AutonomicFarmSQ<T, U> f = AutonomicFarmSQ<T, U>(nWorker, function, tsGoal, inputVector, collector, time, debug);
+            AutonomicFarmSQ<T, U> f = AutonomicFarmSQ<T, U>(nWorker, function, tsGoal, inputSize, input1, input2, input3, collector, time, debug);
             f.start();
         } else {
             // Fastflow queue
-            AutonomicFarm<T, U> f = AutonomicFarm<T, U>(nWorker, function, tsGoal, inputVector, collector, time, debug);
+            AutonomicFarm<T, U> f = AutonomicFarm<T, U>(nWorker, function, tsGoal, inputSize, input1, input2, input3, collector, time, debug);
             f.start();
         }
     }
@@ -89,7 +65,6 @@ int main(int argc, char* argv[]) {
     std::string safeQueueString = "false";
     std::string fastFlowString = "false";
     std::string debug = "false";
-
     bool collector = true;
     bool safeQueue = false;
     bool fastFlow = false;
@@ -106,14 +81,14 @@ int main(int argc, char* argv[]) {
             ("s, safeQueue", "safeQueue (default: false)", cxxopts::value(safeQueueString));
     // clang-format on
 
-    if (argc >= 8) {
-        auto result = options.parse(argc, argv);
-        if (result.count("help")) {
-            std::cout << options.help({"", "Group"}) << std::endl;
-            exit(0);
-        }
-        auto arguments = result.arguments();
+    auto result = options.parse(argc, argv);
+    if (result.count("help")) {
+        std::cout << options.help({"", "Group"}) << std::endl;
+        exit(0);
+    }
+    auto arguments = result.arguments();
 
+    if (argc >= 8) {
         if (result.count("f")) {
             if (result.count("c") || result.count("s")) {
                 std::cout << "L'opzione FastFlow va usata da sola senza le altre due" << std::endl;
@@ -123,9 +98,15 @@ int main(int argc, char* argv[]) {
 
         if (workers > maxWorkers)
             workers = maxWorkers;
-        collector = parser(collectorString);
-        safeQueue = parser(safeQueueString);
-        fastFlow = parser(fastFlowString);
+        try {
+            collector = parser(collectorString);
+            safeQueue = parser(safeQueueString);
+            fastFlow = parser(fastFlowString);
+        } catch (NonValidValue& e) {
+            std::cout << "Paramero non valido" << std::endl;
+            std::cout << options.help({"", "Group"}) << std::endl;
+            return -1;
+        }
 
         init<int, int>(workers, atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), fib, collector, safeQueue, fastFlow, debug);
     } else {

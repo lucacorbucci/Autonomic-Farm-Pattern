@@ -39,6 +39,28 @@ class AutonomicFarmSQ {
     std::atomic<int>* timeEmitter = new std::atomic<int>(0);
     std::atomic<int>* timeCollector = new std::atomic<int>(0);
     std::string debug;
+    int inputSize;
+    U n1, n2, n3;
+
+    ///  @detail Typename T is used for as output type of the function that
+    ///  the worker will compute. Typename U is input as output type of the function
+    ///  that the worker will compute.
+    void fillVector() {
+        std::vector<Task<T, U>*> inputVector;
+        inputVector.reserve(this->inputSize);
+        for (int i = 0; i < this->inputSize; i++) {
+            Task<T, U>* task = new Task<T, U>();
+            if (i > 2 * (this->inputSize / 3))
+                task->value = this->n3;
+            else if (i > (this->inputSize / 3)) {
+                task->value = this->n2;
+            } else {
+                task->value = this->n1;
+            }
+            inputVector.push_back(task);
+        }
+        this->inputVector = inputVector;
+    }
 
    public:
     ///  @brief Constructor method of the AutonomicFarm Class
@@ -48,21 +70,27 @@ class AutonomicFarmSQ {
     ///  @param nWorker     Initial number of workers
     ///  @param function    The function that the worker will compute
     ///  @param tsGoal      Expected service time
-    ///  @param inputVector Input Vector with the tasks that has to be computed
+    ///  @param inputSize   Size of the input collection
+    ///  @param n1          First input value
+    ///  @param n2          Second input value
+    ///  @param n3          Third input value
     ///  @param collector   True if we want to use the collector, false otherwise
     ///  @param time        This is time that we have to wait to change the number of workers of the farm
     ///  @param debug       This is used to print some informations during the execution of the farm
-    AutonomicFarmSQ(int nWorker, std::function<T(U x)> function, int tsGoal, std::vector<Task<T, U>*> inputVector, bool collector, int time, std::string debug) {
+    AutonomicFarmSQ(int nWorker, std::function<T(U x)> function, int tsGoal, int inputSize, U n1, U n2, U n3, bool collector, int time, std::string debug) {
         this->nWorker = nWorker;
         this->function = function;
         this->tsGoal = tsGoal;
         this->feedbackQueue = new SafeQueue<Feedback*>();
         this->feedbackQueueWorker = new SafeQueue<Feedback*>();
         this->debug = debug;
-
-        this->inputVector = inputVector;
         this->collector = collector;
         this->time = time;
+        this->inputSize = inputSize;
+        this->n1 = n1;
+        this->n2 = n2;
+        this->n3 = n3;
+        fillVector();
     }
 
     ///  @brief This function start the creation of the autonomic farm with its components
