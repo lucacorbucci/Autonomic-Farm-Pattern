@@ -23,7 +23,6 @@ class Collector {
    private:
     uMPMC_Ptr_Queue *inputQueue;
     std::thread collectorThread;
-    std::vector<T> accumulator;
     uSWSR_Ptr_Buffer *feedbackQueue;
     int activeWorkers;
     int tsGoal;
@@ -33,18 +32,6 @@ class Collector {
     int currentWorkers;
     std::atomic<int> *timeEmitter;
     std::atomic<int> *timeCollector;
-
-    ///  @brief Function used to print some useful information
-    ///  @param The task popped from the queue
-    void
-    debug(Task<T, U> *t) {
-        std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
-        int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-        int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
-        int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        //std::cout << TS << std::endl;
-        //std::cout << "elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << t->workingThreads << " new number of workers: " << newNWorker << std::endl;
-    }
 
     ///  @brief Constructor method of the Collector component
     ///  @param *InputQueue   The queue from which we extract the computed tasks
@@ -65,6 +52,7 @@ class Collector {
         this->timeEmitter = timeEmitter;
         this->timeCollector = timeCollector;
     }
+    std::vector<Task<T, U> *> accumulator;
 
     ///  @brief This method is used to create and send the feedback from the collector to the emitter
     ///  @param newNWorker  The new number of workers
@@ -120,8 +108,7 @@ class Collector {
 
                         sendFeedback(newNWorker);
 
-                        accumulator.push_back(t->result);
-                        delete (t);
+                        accumulator.push_back(t);
                     }
                 }
                 end = std::chrono::high_resolution_clock::now();

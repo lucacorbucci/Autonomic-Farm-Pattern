@@ -38,7 +38,7 @@ struct WorkerFF : ff_monode_t<Task<T, U>> {
         if (debugStr == "true") {
             std ::cout << "Calcolato " << t->value << " Con " << t->workingThreads << " in " << elapsedINT << " myTS: " << TS << " Ideal TS " << this->tsGoal << " New NWorkers " << newNWorker << " da " << this->ID << std::endl;
         } else if (debugStr == "ts") {
-            std::cout << TS << std::endl;
+            std::cout << TS << " " << t->workingThreads << std::endl;
         }
         t->newWorkingThreads = newNWorker;
     }

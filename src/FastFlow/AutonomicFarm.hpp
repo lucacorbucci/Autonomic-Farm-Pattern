@@ -128,7 +128,9 @@ class AutonomicFarmFF {
         std::vector<Task<T, U> *> results = c->results;
 
         for (auto item : results) {
-            //std::cout << item->result << std::endl;
+            if (debug == "results") {
+                std::cout << item->result << std::endl;
+            }
             delete (item);
         }
 

@@ -49,7 +49,6 @@ class EmitterSQ {
     int x;
     int count = 0;
     SafeQueue<Feedback *> *feedbackQueueWorker;
-    bool collector;
     std::atomic<int> *timeEmitter;
     std::chrono::high_resolution_clock::time_point lastUpdate;
     int stopTime;
@@ -159,8 +158,7 @@ class EmitterSQ {
     ///  and based on this feedback changes the number of currently active workers.
     ///  The function set the worker that send the message as available.
     void receiveFeedback() {
-        // In this case we have the collector
-        if (!this->feedbackQueue->isEmpty() && collector) {
+        if (!this->feedbackQueue->isEmpty()) {
             Feedback *tmpF;
             tmpF = this->feedbackQueue->safe_pop();
             if (tmpF) {
@@ -175,9 +173,6 @@ class EmitterSQ {
             if (tmpF) {
                 Feedback *f = reinterpret_cast<Feedback *>(tmpF);
                 activeWorkers[f->senderID] = 1;
-                if (!collector) {
-                    readFeedback(f);
-                }
             }
         }
     }
@@ -225,10 +220,9 @@ class EmitterSQ {
     ///  @param FeedbackQueue       The feedback queue used to send back a feedback to the emitter
     ///  @param inputVector         Input Vector with the tasks that has to be computed
     ///  @param FeedbackQueueWorker The feedback queue used to send back a feedback to the emitter from the worker
-    ///  @param collector           True if we want to use the collector, false otherwise
     ///  @param timeEmitter         Emitter's service time
     ///  @param time                This is time that we have to wait to change the number of workers of the farm
-    EmitterSQ(std::vector<SafeQueue<Task<T, U> *> *> *outputQueue, std::vector<WorkerSQ<T, U> *> workerQueue, int nWorker, SafeQueue<Feedback *> *feedbackQueue, std::vector<Task<T, U> *> inputVector, SafeQueue<Feedback *> *feedbackQueueWorker, bool collector, std::atomic<int> *timeEmitter, int time) {
+    EmitterSQ(std::vector<SafeQueue<Task<T, U> *> *> *outputQueue, std::vector<WorkerSQ<T, U> *> workerQueue, int nWorker, SafeQueue<Feedback *> *feedbackQueue, std::vector<Task<T, U> *> inputVector, SafeQueue<Feedback *> *feedbackQueueWorker, std::atomic<int> *timeEmitter, int time) {
         this->outputQueue = outputQueue;
 
         this->workerQueue = workerQueue;
@@ -247,7 +241,6 @@ class EmitterSQ {
         for (int i = 0; i < nWorker; i++) {
             sleepingWorkers.push_back(0);
         }
-        this->collector = collector;
         this->timeEmitter = timeEmitter;
         this->stopTime = time;
     }

@@ -44,7 +44,6 @@ class WorkerSQ {
     bool status = true;
     int ID;
     SafeQueue<Feedback *> *feedbackQueueWorker;
-    bool collector;
     int count = 0;
     int x;
     int currentWorkers;
@@ -63,11 +62,7 @@ class WorkerSQ {
     ///  @returns Void
     void sendFeedback(int newNWorker) {
         Feedback f;
-        if (!collector) {
-            int n = createFeedback(newNWorker, currentWorkers, maxWorkers);
-            if (n > 0)
-                f.newNumberOfWorkers = n;
-        }
+
         f.senderID = ID;
         feedbackQueueWorker->safe_push(&f);
     }
@@ -82,7 +77,7 @@ class WorkerSQ {
         if (debugStr == "true") {
             std ::cout << "Calcolato " << t->value << " Con " << t->workingThreads << " in " << elapsedINT << " myTS: " << TS << " Ideal TS " << this->tsGoal << " New NWorkers " << newNWorker << " da " << this->ID << std::endl;
         } else if (debugStr == "ts") {
-            std::cout << TS << std::endl;
+            std::cout << TS << " " << t->workingThreads << std::endl;
         }
     }
 
@@ -100,37 +95,19 @@ class WorkerSQ {
 
         t->startingTime = std::chrono::high_resolution_clock::now();
         if (t->end == -1) {
-            if (collector)
-                outputQueue->safe_push(t);
-            else
-                delete (t);
+            outputQueue->safe_push(t);
             return -1;
         } else {
             t->result = this->function(t->value);
             int newNWorker;
             t->endingTime = std::chrono::high_resolution_clock::now();
 
-            /*
-                        Without the collector i have to compute here the new 
-                        number of worker and i send to the emitter this value
-            */
-            if (collector) {
-                outputQueue->safe_push(t);
-            } else {
-                std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
-                int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
-                if (*timeEmitter > TS)
-                    newNWorker = round(float(*timeEmitter) / this->tsGoal);
-                else
-                    newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
-            }
-
             debug(t);
+            outputQueue->safe_push(t);
+
             // Send the ack to the emitter
             sendFeedback(newNWorker);
-            if (!collector) {
-                delete (t);
-            }
+
             return 1;
         }
 
@@ -145,12 +122,11 @@ class WorkerSQ {
     ///  @param inputQueue      The queue from which the worker extract the task to be computed
     ///  @param outputQueue     The queue where the worker push the computed task
     ///  @param feedbackQueue   The queue where the worker push the ack for the emitter
-    ///  @param collector       True if we use the collector, false otherwise
     ///  @param activeWorkers   Initial number of workers
     ///  @param tsGoal          Expected service time
     ///  @param timeEmitter     Emitter's service time
     ///  @param debugStr        String used to print some informations during the execution of the farm
-    WorkerSQ(int ID, std::function<T(U x)> fun, SafeQueue<Task<T, U> *> *inputQueue, SafeQueue<Task<T, U> *> *outputQueue, SafeQueue<Feedback *> *feedbackQueueWorker, bool collector, int activeWorkers, int tsGoal, std::atomic<int> *timeEmitter, std::string debugStr) {
+    WorkerSQ(int ID, std::function<T(U x)> fun, SafeQueue<Task<T, U> *> *inputQueue, SafeQueue<Task<T, U> *> *outputQueue, SafeQueue<Feedback *> *feedbackQueueWorker, int activeWorkers, int tsGoal, std::atomic<int> *timeEmitter, std::string debugStr) {
         this->function = fun;
         this->inputQueue = inputQueue;
         this->outputQueue = outputQueue;
@@ -158,7 +134,6 @@ class WorkerSQ {
         this->status = true;
         this->ID = ID;
         this->feedbackQueueWorker = feedbackQueueWorker;
-        this->collector = collector;
         this->x = activeWorkers;
         this->tsGoal = tsGoal;
         this->currentWorkers = activeWorkers;

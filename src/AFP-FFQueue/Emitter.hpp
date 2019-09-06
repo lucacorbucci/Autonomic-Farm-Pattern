@@ -49,7 +49,6 @@ class Emitter {
     int currentNumWorker;
     ///  @brief Number of workers that worked in the previous iteration
     int prevNumWorker;
-    bool collector;
     int x;
     int count = 0;
     uMPMC_Ptr_Queue *feedbackQueueWorker;
@@ -163,8 +162,7 @@ class Emitter {
 
     ///  @brief This function extract the feedback from the feedback queue
     void receiveFeedback() {
-        // In this case we have the collector
-        if (!this->feedbackQueue->empty() && collector) {
+        if (!this->feedbackQueue->empty()) {
             void *tmpF;
             bool res = this->feedbackQueue->pop(&tmpF);
             if (res) {
@@ -178,11 +176,6 @@ class Emitter {
         if (res) {
             Feedback *f = reinterpret_cast<Feedback *>(tmpF);
             activeWorkers[f->senderID] = 1;
-            // If there is not collector we have to extract the feedback
-            // from the worker.
-            if (!collector) {
-                readFeedback(f);
-            }
         }
     }
 
@@ -228,10 +221,9 @@ class Emitter {
     ///  @param FeedbackQueue       The feedback queue used to send back a feedback to the emitter
     ///  @param inputVector         Input Vector with the tasks that has to be computed
     ///  @param FeedbackQueueWorker The feedback queue used to send back a feedback to the emitter from the worker
-    ///  @param collector           True if we want to use the collector, false otherwise
     ///  @param timeEmitter         Emitter's service time
     ///  @param time                This is time that we have to wait to change the number of workers of the farm
-    Emitter(std::vector<SWSR_Ptr_Buffer *> outputQueue, std::vector<Worker<T, U> *> workerQueue, int nWorker, uSWSR_Ptr_Buffer *feedbackQueue, std::vector<Task<T, U> *> inputVector, uMPMC_Ptr_Queue *feedbackQueueWorker, bool collector, std::atomic<int> *timeEmitter, int time) {
+    Emitter(std::vector<SWSR_Ptr_Buffer *> outputQueue, std::vector<Worker<T, U> *> workerQueue, int nWorker, uSWSR_Ptr_Buffer *feedbackQueue, std::vector<Task<T, U> *> inputVector, uMPMC_Ptr_Queue *feedbackQueueWorker, std::atomic<int> *timeEmitter, int time) {
         this->outputQueue = outputQueue;
         this->workerQueue = workerQueue;
         this->maxnWorker = nWorker;
@@ -249,7 +241,6 @@ class Emitter {
         for (int i = 0; i < nWorker; i++) {
             sleepingWorkers.push_back(0);
         }
-        this->collector = collector;
         this->timeEmitter = timeEmitter;
         this->stopTime = time;
     }

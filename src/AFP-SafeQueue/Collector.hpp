@@ -20,7 +20,6 @@ class CollectorSQ {
    private:
     SafeQueue<Task<T, U> *> *inputQueue;
     std::thread collectorThread;
-    std::vector<T> accumulator;
     SafeQueue<Feedback *> *feedbackQueue;
     int activeWorkers;
     int tsGoal;
@@ -64,6 +63,7 @@ class CollectorSQ {
     ///  @param timeEmitter   Emitter's service time
     ///  @param timeCollector Collector's service time
    public:
+    std::vector<Task<T, U> *> accumulator;
     CollectorSQ(SafeQueue<Task<T, U> *> *inputQueue, int activeWorkers, int tsGoal, SafeQueue<Feedback *> *feedbackQueue, std::atomic<int> *timeEmitter, std::atomic<int> *timeCollector) {
         this->inputQueue = inputQueue;
         this->activeWorkers = activeWorkers;
@@ -124,8 +124,7 @@ class CollectorSQ {
 
                             sendFeedback(newNWorker);
 
-                            accumulator.push_back(t->result);
-                            delete (t);
+                            accumulator.push_back(t);
                         }
                     }
                 }
