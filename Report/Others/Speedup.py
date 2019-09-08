@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import matplotlib.lines as mlines
 
 
 if(len(sys.argv) > 1):
@@ -33,16 +34,24 @@ if(len(sys.argv) > 1):
     print y3
 
     my_xticks = [1, 2, 4, 8, 16, 32, 64, 128]
+    ax = [1, 2, 3, 4, 5, 6, 7, 8]
 
-    plt.xticks(x, my_xticks)
+    fig, aa = plt.subplots()
+    line = mlines.Line2D([0, 1], [0, 1], color='black',
+                         label="Ideal")
+    transform = aa.transAxes
+    line.set_transform(transform)
+    aa.add_line(line)
+
     plt.tick_params(axis='x', which='major', pad=10, labelsize=8)
+    plt.plot(ax, y, label="C++ Threads with FastFlow Queue",
+             color='black', marker='.', linestyle='dotted')
+    plt.plot(ax, y2, color='black',
+             label="C++ Threads with Safe Queue", marker='*', linestyle='--')
+    plt.plot(ax, y3, color='black',
+             label="FastFlow", marker='+', linestyle='-.')
 
-    # plt.yticks(x, y)
-    plt.plot(x, y, label="C++ Threads with FastFlow Queue", color='black')
-    plt.plot(x, y2, marker='', color='red',
-             label="C++ Threads with Safe Queue")
-    plt.plot(x, y3, marker='', color='blue',
-             label="FastFlow")
+    plt.xticks(ax, my_xticks)
 
     plt.xlabel('Number of Workers')
     plt.ylabel('Speedup')

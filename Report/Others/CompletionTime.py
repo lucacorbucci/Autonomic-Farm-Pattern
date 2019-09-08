@@ -18,11 +18,12 @@ my_xticks = [1, 2, 4, 8, 16, 32, 64, 128]
 plt.xticks(x, my_xticks)
 # plt.yticks(y, my_yticks)
 
-plt.plot(x, timeNOSQ, label="C++ Threads with FastFlow Queue", color='black')
-plt.plot(x, time, marker='', color='red',
-         label="C++ Threads with Safe Queue")
-plt.plot(x, timeFastFlow, marker='', color='blue',
-         label="FastFlow")
+plt.plot(x, timeNOSQ, marker='+',
+         label="C++ Threads with FastFlow Queue", color='black', linestyle='dotted')
+plt.plot(x, time, marker='o', color='black',
+         label="C++ Threads with Safe Queue", linestyle='--')
+plt.plot(x, timeFastFlow, marker='*', color='black',
+         label="FastFlow", linestyle='-.')
 
 plt.xlabel('Number of Workers')
 plt.ylabel('Completion Time (in seconds)')

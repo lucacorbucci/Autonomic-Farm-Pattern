@@ -33,13 +33,25 @@ echo "Testing..."
 ./mainFib.out 8 15 1000 39 41 40 500 -s true
 ./mainFib.out 8 15 1000 39 41 40 500 -s true
 ./mainFib.out 8 15 1000 39 41 40 500 -s true
+./mainFib.out 8 15 1000 39 41 40 500 -s true
+./mainFib.out 8 15 1000 39 41 40 500 -s true
 
+./mainFib.out 4 15 1000 39 41 40 500 -s true
+./mainFib.out 4 15 1000 39 41 40 500 -s true
+./mainFib.out 4 15 1000 39 41 40 500 -s true
 ./mainFib.out 4 15 1000 39 41 40 500 -s true
 ./mainFib.out 4 15 1000 39 41 40 500 -s true
 
 ./mainFib.out 2 15 1000 39 41 40 500 -s true
 ./mainFib.out 2 15 1000 39 41 40 500 -s true
+./mainFib.out 2 15 1000 39 41 40 500 -s true
+./mainFib.out 2 15 1000 39 41 40 500 -s true
+./mainFib.out 2 15 1000 39 41 40 500 -s true
 
+./mainFib.out 1 15 1000 39 41 40 500 -s true
+./mainFib.out 1 15 1000 39 41 40 500 -s true
+./mainFib.out 1 15 1000 39 41 40 500 -s true
+./mainFib.out 1 15 1000 39 41 40 500 -s true
 ./mainFib.out 1 15 1000 39 41 40 500 -s true
 
 ./mainFib.out 128 15 1000 39 41 40 500 -s false
@@ -72,10 +84,20 @@ echo "Testing..."
 
 ./mainFib.out 4 15 1000 39 41 40 500 -s false
 ./mainFib.out 4 15 1000 39 41 40 500 -s false
+./mainFib.out 4 15 1000 39 41 40 500 -s false
+./mainFib.out 4 15 1000 39 41 40 500 -s false
+./mainFib.out 4 15 1000 39 41 40 500 -s false
 
 ./mainFib.out 2 15 1000 39 41 40 500 -s false
 ./mainFib.out 2 15 1000 39 41 40 500 -s false
+./mainFib.out 2 15 1000 39 41 40 500 -s false
+./mainFib.out 2 15 1000 39 41 40 500 -s false
+./mainFib.out 2 15 1000 39 41 40 500 -s false
 
+./mainFib.out 1 15 1000 39 41 40 500 -s false
+./mainFib.out 1 15 1000 39 41 40 500 -s false
+./mainFib.out 1 15 1000 39 41 40 500 -s false
+./mainFib.out 1 15 1000 39 41 40 500 -s false
 ./mainFib.out 1 15 1000 39 41 40 500 -s false
 
 ./mainFib.out 128 15 1000 39 41 40 500 -f true
@@ -105,11 +127,23 @@ echo "Testing..."
 ./mainFib.out 8 15 1000 39 41 40 500 -f true
 ./mainFib.out 8 15 1000 39 41 40 500 -f true
 ./mainFib.out 8 15 1000 39 41 40 500 -f true
+./mainFib.out 8 15 1000 39 41 40 500 -f true
+./mainFib.out 8 15 1000 39 41 40 500 -f true
 
+./mainFib.out 4 15 1000 39 41 40 500 -f true
+./mainFib.out 4 15 1000 39 41 40 500 -f true
+./mainFib.out 4 15 1000 39 41 40 500 -f true
 ./mainFib.out 4 15 1000 39 41 40 500 -f true
 ./mainFib.out 4 15 1000 39 41 40 500 -f true
 
 ./mainFib.out 2 15 1000 39 41 40 500 -f true
 ./mainFib.out 2 15 1000 39 41 40 500 -f true
+./mainFib.out 2 15 1000 39 41 40 500 -f true
+./mainFib.out 2 15 1000 39 41 40 500 -f true
+./mainFib.out 2 15 1000 39 41 40 500 -f true
 
+./mainFib.out 1 15 1000 39 41 40 500 -f true
+./mainFib.out 1 15 1000 39 41 40 500 -f true
+./mainFib.out 1 15 1000 39 41 40 500 -f true
+./mainFib.out 1 15 1000 39 41 40 500 -f true
 ./mainFib.out 1 15 1000 39 41 40 500 -f true

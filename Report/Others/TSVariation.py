@@ -22,18 +22,18 @@ if(len(sys.argv) > 2):
     print(round(sum/1000))
 
     fig, ax1 = plt.subplots()
-    color = 'tab:blue'
+    color = 'black'
     ax1.set_xlabel('Computed Task')
     ax1.set_ylabel('Service Time', color=color)
     ax1.plot(x, TS, color=color)
     ax1.tick_params(axis='y', labelcolor=color)
     plt.title(sys.argv[2])
 
-    ax1.axhline(y=100, color='r', linestyle='-')
+    ax1.axhline(y=100, color='gray', linestyle='-')
     fig.savefig(sys.argv[2] + "_OnlyTS")
 
     fig2, ax = plt.subplots()
-    color = 'tab:blue'
+    color = 'black'
     ax.set_xlabel('Computed Task')
     ax.set_ylabel('Service Time', color=color)
     ax.plot(x, TS, color=color)
@@ -41,10 +41,9 @@ if(len(sys.argv) > 2):
 
     ax2 = ax.twinx()
 
-    color = 'tab:red'
-    # we already handled the x-label with ax1
+    color = 'black'
     ax2.set_ylabel('Workers', color=color)
-    ax2.plot(x, nWorker, color=color)
+    ax2.plot(x, nWorker, color='gray', linestyle='--')
     ax2.tick_params(axis='y', labelcolor=color)
     plt.title(sys.argv[2])
     plt.tight_layout()

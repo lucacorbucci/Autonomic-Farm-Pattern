@@ -60,7 +60,7 @@ void init(int nWorker, int tsGoal, int inputSize, U input1, U input2, U input3, 
 
 int main(int argc, char* argv[]) {
     std::stringstream ss;
-    ss << argv[0] << "nWorker inputSize tsGoal n1 n2 n3";
+    ss << argv[0] << " nWorker tsGoal inputSize n1 n2 n3 time";
     cxxopts::Options options("Autonomic Farm patter", ss.str());
 
     std::string safeQueueString = "false";
