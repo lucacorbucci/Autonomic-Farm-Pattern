@@ -226,47 +226,40 @@ struct EmitterFF : ff_monode_t<Task<T, U>, Task<T, U>> {
             }
         }
 
-        // In this case we received the feedback from one of the workers
-        if ((size_t)wid < this->get_num_outchannels()) {
-            //std::cout << "ricevuto feedback da " << wid << std::endl;
-            setFree(wid);
-            received++;
-
+        // In this case i receive the feedback from the collector
+        if ((size_t)wid == this->get_num_outchannels()) {
             std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - lastUpdate;
             int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
 
             if (elapsedINT > stopTime || first) {
                 // wake up one or more worker based on the information of the feedback
                 checkWakeUp(task);
-
                 // send a sleep to one or more worker based on the information of the feedback
                 checkSleep(task);
             }
-            /*
-                I have to check if there are some tasks in the temporary queue.
-                If there are some tasks i send one (or more) task to a worker.
-            */
+        }
 
-            if (inputTasks.size() > 0) {
-                /*
-                    This while is necessary because when i decrease the number of 
-                    workers and then I increase this number, i have to send 
-                    a task to a worker even if it didn't send a feedback because it 
-                    was sleeping.
-                */
+        // In this case we received the feedback from one of the workers
+        if ((size_t)wid < this->get_num_outchannels()) {
+            setFree(wid);
+            received++;
+        }
 
-                while (this->working < this->nWorkers && inputTasks.size() > 0) {
-                    int index = getFirstActive();
+        //I have to check if there are some tasks in the temporary queue.
+        if (inputTasks.size() > 0) {
+            // La lista dei task da calcolare la svuoto fino a che ho dei worker
+            // liberi che possono lavorare
+            while (this->working < this->nWorkers && inputTasks.size() > 0) {
+                int index = getFirstActive();
 
-                    if (index >= 0) {
-                        Task<T, U> *inTask = reinterpret_cast<Task<T, U> *>(inputTasks.front());
+                if (index >= 0) {
+                    Task<T, U> *inTask = reinterpret_cast<Task<T, U> *>(inputTasks.front());
 
-                        inTask->workingThreads = this->nWorkers;
+                    inTask->workingThreads = this->nWorkers;
 
-                        sendTask(inTask, index);
+                    sendTask(inTask, index);
 
-                        inputTasks.erase(inputTasks.begin());  /// <---------
-                    }
+                    inputTasks.erase(inputTasks.begin());  /// <---------
                 }
             }
         }
@@ -278,17 +271,9 @@ struct EmitterFF : ff_monode_t<Task<T, U>, Task<T, U>> {
                 In this case i send a wake up signal to all the workers
                 and then i send an EOS to all the workers.
             */
-            // unsigned int index = 0;
-            // while (sleeping > 0 && index < sleepingWorkers.size()) {
-            //     if (sleepingWorkers[index] == 1) {
-            //         wakeUpWorker(index);
-            //     }
-            //     index++;
-            // }
+
             for (int i = 0; i < this->maxWorkers; i++) {
                 wakeUpWorker(i);
-                //std::cout << "wake up " << i << std::endl;
-                //this->ff_send_out_to(this->EOS, i);
             }
             this->broadcast_task(this->EOS);
             return this->EOS;

@@ -90,13 +90,13 @@ class AutonomicFarmFF {
         // I create the vector with all the workers
         std::vector<ff_node *> w;
         for (int i = 0; i < nWorker; i++)
-            w.push_back(new WorkerFF<T, U>(this->function, i, tsGoal, debug));
+            w.push_back(new WorkerFF<T, U>(this->function, tsGoal));
 
         // Fill the vector with input task
         std::vector<Task<T, U> *> inputVector = fillVector(inputSize, n1, n2, n3);
         ExternalEmitterFF<T, U> extEm(inputVector);
         ff_farm farm;
-        CollectorFF<T, U> *c = new CollectorFF<T, U>(tsGoal);
+        CollectorFF<T, U> *c = new CollectorFF<T, U>(tsGoal, debug);
         EmitterFF<T, U> *e = new EmitterFF<T, U>(farm.getlb(), nWorker, inputSize, time);
 
         farm.add_workers(w);
@@ -105,7 +105,7 @@ class AutonomicFarmFF {
 
         farm.add_collector(c);
 
-        //farm.wrap_around();
+        farm.wrap_around();
         //farm.run_and_wait_end();
         farm.getlb()->waitlb();
         ff_Pipe<> pipe(extEm, farm);
