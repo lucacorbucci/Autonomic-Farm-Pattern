@@ -23,7 +23,7 @@ if(len(sys.argv) > 2):
 
     fig, ax1 = plt.subplots()
     color = 'black'
-    ax1.set_xlabel('Computed Task')
+    ax1.set_xlabel('Computed Tasks')
     ax1.set_ylabel('Service Time', color=color)
     ax1.plot(x, TS, color=color)
     ax1.tick_params(axis='y', labelcolor=color)
@@ -34,7 +34,7 @@ if(len(sys.argv) > 2):
 
     fig2, ax = plt.subplots()
     color = 'black'
-    ax.set_xlabel('Computed Task')
+    ax.set_xlabel('Computed Tasks')
     ax.set_ylabel('Service Time', color=color)
     ax.plot(x, TS, color=color)
     ax.tick_params(axis='y', labelcolor=color)

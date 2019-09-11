@@ -13,46 +13,33 @@ if(len(sys.argv) > 1):
 
     tSeq = 2068.25
 
-    y = [tSeq/val for val in time]
-    y = [round(val, 2) for val in y]
-    y.reverse()
+    time.reverse()
+    EfficiencySQ = [(tSeq/(val*nw)) for nw, val in zip(x, time)]
+    print EfficiencySQ
 
-    print y
+    timeNOSQ.reverse()
+    EfficiencyNOSQ = [(tSeq/(val*nw)) for nw, val in zip(x, timeNOSQ)]
+    print EfficiencyNOSQ
 
-    y2 = [tSeq/val for val in timeNOSQ]
-    y2 = [round(val, 2) for val in y2]
-    y2.reverse()
-
-    print y2
-
-    y3 = [tSeq/val for val in timeFastFlow]
-    y3 = [round(val, 2) for val in y3]
-    y3.reverse()
-
-    print y3
+    timeFastFlow.reverse()
+    EfficiencyFF = [(tSeq/(val*nw)) for nw, val in zip(x, timeFastFlow)]
+    print EfficiencyFF
 
     my_xticks = [1, 2, 4, 8, 16, 32, 64, 128]
     ax = [1, 2, 3, 4, 5, 6, 7, 8]
 
-    fig, aa = plt.subplots()
-    line = mlines.Line2D([0, 1], [0, 1], color='black',
-                         label="Ideal")
-    transform = aa.transAxes
-    line.set_transform(transform)
-    aa.add_line(line)
-
     plt.tick_params(axis='x', which='major', pad=10, labelsize=8)
-    plt.plot(ax, y2, label="C++ Threads with FastFlow Queue",
+    plt.plot(ax, EfficiencyNOSQ, label="C++ Threads with FastFlow Queue",
              color='black', marker='.', linestyle='dotted')
-    plt.plot(ax, y, color='black',
+    plt.plot(ax, EfficiencySQ, color='black',
              label="C++ Threads with Safe Queue", marker='*', linestyle='--')
-    plt.plot(ax, y3, color='black',
+    plt.plot(ax, EfficiencyFF, color='black',
              label="FastFlow", marker='+', linestyle='-.')
 
     plt.xticks(ax, my_xticks)
 
     plt.xlabel('Number of Workers')
-    plt.ylabel('Speedup')
+    plt.ylabel('Efficiency')
 
     plt.title(sys.argv[1])
     plt.tight_layout()

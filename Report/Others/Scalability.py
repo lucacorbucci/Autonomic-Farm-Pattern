@@ -43,9 +43,9 @@ if(len(sys.argv) > 1):
     aa.add_line(line)
 
     plt.tick_params(axis='x', which='major', pad=10, labelsize=8)
-    plt.plot(ax, y, label="C++ Threads with FastFlow Queue",
+    plt.plot(ax, y2, label="C++ Threads with FastFlow Queue",
              color='black', marker='.', linestyle='dotted')
-    plt.plot(ax, y2, color='gray', label="C++ Threads with Safe Queue",
+    plt.plot(ax, y, color='gray', label="C++ Threads with Safe Queue",
              marker='*', linestyle='--')
     plt.plot(ax, y3, color='black', label="FastFlow",
              marker='+', linestyle='-.')

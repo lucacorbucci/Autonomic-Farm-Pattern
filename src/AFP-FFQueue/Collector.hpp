@@ -55,7 +55,7 @@ class Collector {
     std::vector<Task<T, U> *> accumulator;
 
     ///  @brief This method is used to create and send the feedback from the collector to the emitter
-    ///  @param newNWorker  The new number of workers
+    ///  @param newNWorker  New number of workers
     void sendFeedback(int newNWorker) {
         Feedback f;
         int n = createFeedback(newNWorker, currentWorkers, maxWorkers);
@@ -68,7 +68,7 @@ class Collector {
     ///  @brief Start the collector componentend.
     ///  @details
     ///  This function extracts a computed task from the input queue and computes
-    ///  the best number of workers that will be used to compute the next tasks
+    ///  the number of workers that will be used to compute the next tasks
     ///  based on the elapsed time of the popped task.
     ///  This function uses a spsc queue to communicate with the emitter to change
     ///  the number of workers
@@ -82,10 +82,10 @@ class Collector {
             while (true) {
                 start = std::chrono::high_resolution_clock::now();
                 void *tmpTask;
-                //Check if the queue is empty or not.
+                // Estraggo dalla coda
                 if (inputQueue->pop(&tmpTask)) {
                     Task<T, U> *t = reinterpret_cast<Task<T, U> *>(tmpTask);
-
+                    // Controllo se è il task che mi dice di terminare o no
                     if (t->end == -1) {
                         counter++;
                         delete (t);
@@ -94,6 +94,7 @@ class Collector {
                         std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
                         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
                         int newNWorker;
+                        // Calcolo il massimo tra i vari tempi
                         if (*timeEmitter > *timeCollector) {
                             if (*timeEmitter > TS)
                                 newNWorker = round(float(*timeEmitter) / this->tsGoal);
@@ -106,8 +107,9 @@ class Collector {
                                 newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
                         }
 
+                        // invio il feedback all'emitter
                         sendFeedback(newNWorker);
-
+                        // memorizzo il risultato del task calcolato
                         accumulator.push_back(t);
                     }
                 }

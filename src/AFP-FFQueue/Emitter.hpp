@@ -20,7 +20,7 @@ using namespace ff;
 template <class T, class U>
 class Emitter {
    private:
-    ///  @brief Vector ofoutputQueue for the emitter.
+    ///  @brief Vector of outputQueue for the emitter.
     ///  I have an outputQueue for each of the workers
     std::vector<SWSR_Ptr_Buffer *> outputQueue;
     ///  @brief Emitter's thread

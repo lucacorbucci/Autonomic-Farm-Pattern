@@ -51,8 +51,6 @@ class CollectorSQ {
         int elapsedINT = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
         int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
         int newNWorker = round(float(elapsedINT) / this->tsGoal);
-        //std::cout << TS << std::endl;
-        // std::cout << "Value " << t->value << " elapsed " << elapsedINT << " tsGoal " << this->tsGoal << " actual TS " << TS << " current number of workers " << t->workingThreads << " new number of workers: " << newNWorker << std::endl;
     }
 
     ///  @brief Constructor method of the Collector component
@@ -88,11 +86,10 @@ class CollectorSQ {
     ///  This function extracts a computed task from the input queue and computes
     ///  the best number of workers that will be used to compute the next tasks
     ///  based on the elapsed time of the popped task.
-    ///  This function uses a spsc queue to communicate with the emitter to change
+    ///  This function uses a safe Queue to communicate with the emitter to change
     ///  the number of workers
     ///  @return Void
     void start() {
-        // std::cout << "collector avviato" << std::endl;
         this->collectorThread = std::thread([=] {
             int counter = 0;
             while (true) {
@@ -101,7 +98,7 @@ class CollectorSQ {
                 if (!inputQueue->isEmpty()) {
                     if ((tmpTask = inputQueue->safe_pop())) {
                         Task<T, U> *t = reinterpret_cast<Task<T, U> *>(tmpTask);
-
+                        // Controllo se devo terminare o no
                         if (t->end == -1) {
                             counter++;
                             delete (t);
@@ -110,6 +107,7 @@ class CollectorSQ {
                             std::chrono::duration<double> elapsed = t->endingTime - t->startingTime;
                             int TS = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / t->workingThreads;
                             int newNWorker;
+                            // Calcolo il service time
                             if (*timeEmitter > *timeCollector) {
                                 if (*timeEmitter > TS)
                                     newNWorker = round(float(*timeEmitter) / this->tsGoal);
@@ -121,9 +119,9 @@ class CollectorSQ {
                                 else
                                     newNWorker = round(float(std::chrono::duration_cast<std::chrono::milliseconds>(t->endingTime - t->startingTime).count()) / this->tsGoal);
                             }
-
+                            // Invio il feedback all'emitter
                             sendFeedback(newNWorker);
-
+                            // Memorizzo il risultato della computazione
                             accumulator.push_back(t);
                         }
                     }

@@ -41,9 +41,7 @@ class AutonomicFarmSQ {
     int inputSize;
     U n1, n2, n3;
 
-    ///  @detail Typename T is used for as output type of the function that
-    ///  the worker will compute. Typename U is input as output type of the function
-    ///  that the worker will compute.
+    ///  @brief Creates the input vector with all the tasks that i have to compute
     void fillVector() {
         std::vector<Task<T, U>*> inputVector;
         inputVector.reserve(this->inputSize);
@@ -61,6 +59,8 @@ class AutonomicFarmSQ {
         this->inputVector = inputVector;
     }
 
+    ///  @brief This function optionally prints the results of the computation
+    ///  and then delete the task
     void printAndDelete(std::vector<Task<T, U>*> accumulator) {
         if (debug == "results") {
             for (auto item : accumulator) {
@@ -101,7 +101,7 @@ class AutonomicFarmSQ {
         fillVector();
     }
 
-    ///  @brief This function start the creation of the autonomic farm with its components
+    ///  @brief This function starts the creation of the autonomic farm with its components
     /// (emitter, workers, collector)
     ///  @return Void
     void start() {
@@ -110,7 +110,6 @@ class AutonomicFarmSQ {
             // Creation of the communication channels
             for (int i = 0; i < this->nWorker; i++) {
                 SafeQueue<Task<T, U>*>* b = new SafeQueue<Task<T, U>*>();
-
                 inputQueues->push_back(b);
             }
 
@@ -138,8 +137,9 @@ class AutonomicFarmSQ {
             e.join();
             printAndDelete(c->accumulator);
             c->join();
-            for (int i = 0; i < nWorker; i++)
-                delete (inputQueues->at(i));
+
+            // Free the memory
+            for (int i = 0; i < nWorker; i++) delete (inputQueues->at(i));
             for (int i = 0; i < nWorker; i++)
                 delete (workerQueue[i]->workerThread);
             for (int i = 0; i < nWorker; i++)

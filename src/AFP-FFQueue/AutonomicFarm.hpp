@@ -45,9 +45,7 @@ class AutonomicFarm {
     int inputSize;
     U n1, n2, n3;
 
-    ///  @detail Typename T is used for as output type of the function that
-    ///  the worker will compute. Typename U is input as output type of the function
-    ///  that the worker will compute.
+    ///  @brief Creates the input vector with all the tasks that i have to compute
     void fillVector() {
         std::vector<Task<T, U>*> inputVector;
         inputVector.reserve(this->inputSize);
@@ -65,6 +63,8 @@ class AutonomicFarm {
         this->inputVector = inputVector;
     }
 
+    ///  @brief This function optionally prints the results of the computation
+    ///  and then delete the task
     void printAndDelete(std::vector<Task<T, U>*> accumulator) {
         if (debug == "results") {
             for (auto item : accumulator) {
@@ -147,6 +147,7 @@ class AutonomicFarm {
             e.join();
             printAndDelete(c->accumulator);
 
+            // Free the memory
             c->join();
             for (int i = 0; i < nWorker; i++)
                 delete (inputQueues[i]);
