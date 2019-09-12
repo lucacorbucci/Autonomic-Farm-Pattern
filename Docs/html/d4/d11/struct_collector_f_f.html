@@ -83,9 +83,9 @@ Inheritance diagram for CollectorFF&lt; T, U &gt;:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a4ff1d7ccd2c900ab2d0a82ee9452881b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d11/struct_collector_f_f.html#a4ff1d7ccd2c900ab2d0a82ee9452881b">CollectorFF</a> (int tsGoal)</td></tr>
-<tr class="memdesc:a4ff1d7ccd2c900ab2d0a82ee9452881b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../df/dde/class_collector.html" title="Implementation of the collector of the autonomic farm @detail Typename T is used for as output type o...">Collector</a>'s constructor.  <a href="#a4ff1d7ccd2c900ab2d0a82ee9452881b">More...</a><br /></td></tr>
-<tr class="separator:a4ff1d7ccd2c900ab2d0a82ee9452881b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01c8a09941d1db195c3eb1371b57a087"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d11/struct_collector_f_f.html#a01c8a09941d1db195c3eb1371b57a087">CollectorFF</a> (int tsGoal, std::string debugStr)</td></tr>
+<tr class="memdesc:a01c8a09941d1db195c3eb1371b57a087"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../df/dde/class_collector.html" title="Implementation of the collector of the autonomic farm @detail Typename T is used for as output type o...">Collector</a>'s constructor.  <a href="#a01c8a09941d1db195c3eb1371b57a087">More...</a><br /></td></tr>
+<tr class="separator:a01c8a09941d1db195c3eb1371b57a087"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc290410edbfb017157dbf107c007ef2"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d11/struct_collector_f_f.html#acc290410edbfb017157dbf107c007ef2">svc</a> (<a class="el" href="../../d3/d72/struct_task.html">Task</a>&lt; T, U &gt; *t)</td></tr>
 <tr class="separator:acc290410edbfb017157dbf107c007ef2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a38dc63cd0641e7d48cb2f70ea01636e2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d11/struct_collector_f_f.html#a38dc63cd0641e7d48cb2f70ea01636e2">svc_end</a> ()</td></tr>
@@ -106,8 +106,8 @@ struct CollectorFF&lt; T, U &gt;</h3>
 
 <p class="definition">Definition at line <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00021">21</a> of file <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html">Collector.hpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a4ff1d7ccd2c900ab2d0a82ee9452881b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4ff1d7ccd2c900ab2d0a82ee9452881b">&#9670;&nbsp;</a></span>CollectorFF()</h2>
+<a id="a01c8a09941d1db195c3eb1371b57a087"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01c8a09941d1db195c3eb1371b57a087">&#9670;&nbsp;</a></span>CollectorFF()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -121,8 +121,18 @@ template&lt;typename T, typename U&gt; </div>
           <td class="memname"><a class="el" href="../../d4/d11/struct_collector_f_f.html">CollectorFF</a>&lt; T, U &gt;::<a class="el" href="../../d4/d11/struct_collector_f_f.html">CollectorFF</a> </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>tsGoal</em></td><td>)</td>
+          <td class="paramname"><em>tsGoal</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>debugStr</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -134,8 +144,8 @@ template&lt;typename T, typename U&gt; </div>
 
 <p><a class="el" href="../../df/dde/class_collector.html" title="Implementation of the collector of the autonomic farm @detail Typename T is used for as output type o...">Collector</a>'s constructor. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00031">31</a> of file <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html">Collector.hpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;                            {</div><div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        this-&gt;tsGoal = tsGoal;</div><div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    }</div></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00048">48</a> of file <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html">Collector.hpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                                                {</div><div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        this-&gt;tsGoal = tsGoal;</div><div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        this-&gt;debugStr = debugStr;</div><div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    }</div></div><!-- fragment -->
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -166,8 +176,8 @@ template&lt;typename T, typename U&gt; </div>
 </div><div class="memdoc">
 <p>std::cout &lt;&lt; "EOS " &lt;&lt; std::endl; </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00048">48</a> of file <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html">Collector.hpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                               {</div><div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    }</div></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00068">68</a> of file <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html">Collector.hpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                               {</div><div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    }</div></div><!-- fragment -->
 </div>
 </div>
 <a id="acc290410edbfb017157dbf107c007ef2"></a>
@@ -196,8 +206,8 @@ template&lt;typename T, typename U&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00035">35</a> of file <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html">Collector.hpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                             {</div><div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <span class="comment">/*</span></div><div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">            The collector receives the task and put the result of the computation</span></div><div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment">            in the results vector.</span></div><div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">        */</span></div><div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        <a class="code" href="../../d4/d11/struct_collector_f_f.html#a63ce1b82d6db1a581e9311515dd449a7">results</a>.push_back(t);</div><div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        <span class="keywordflow">return</span> this-&gt;GO_ON;</div><div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    }</div><div class="ttc" id="struct_collector_f_f_html_a63ce1b82d6db1a581e9311515dd449a7"><div class="ttname"><a href="../../d4/d11/struct_collector_f_f.html#a63ce1b82d6db1a581e9311515dd449a7">CollectorFF::results</a></div><div class="ttdeci">std::vector&lt; Task&lt; T, U &gt; * &gt; results</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00028">Collector.hpp:28</a></div></div>
+<p class="definition">Definition at line <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00053">53</a> of file <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html">Collector.hpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                             {</div><div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <span class="comment">/*</span></div><div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">            The collector receives the task and put the result of the computation</span></div><div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">            in the results vector.</span></div><div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment">        */</span></div><div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        setNewNWorker(t);</div><div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        this-&gt;ff_send_out(t);</div><div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <a class="code" href="../../d4/d11/struct_collector_f_f.html#a63ce1b82d6db1a581e9311515dd449a7">results</a>.push_back(t);</div><div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">return</span> this-&gt;GO_ON;</div><div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    }</div><div class="ttc" id="struct_collector_f_f_html_a63ce1b82d6db1a581e9311515dd449a7"><div class="ttname"><a href="../../d4/d11/struct_collector_f_f.html#a63ce1b82d6db1a581e9311515dd449a7">CollectorFF::results</a></div><div class="ttdeci">std::vector&lt; Task&lt; T, U &gt; * &gt; results</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00045">Collector.hpp:45</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -226,8 +236,8 @@ template&lt;typename T, typename U&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00044">44</a> of file <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html">Collector.hpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;                   {</div><div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="comment">//printf(&quot;----------------------Collector ending------------------------\n&quot;);</span></div><div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    }</div></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00064">64</a> of file <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html">Collector.hpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                   {</div><div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <span class="comment">//printf(&quot;----------------------Collector ending------------------------\n&quot;);</span></div><div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    }</div></div><!-- fragment -->
 </div>
 </div>
 <h2 class="groupheader">Field Documentation</h2>
@@ -245,7 +255,7 @@ template&lt;typename T, typename U&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00028">28</a> of file <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html">Collector.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html#l00045">45</a> of file <a class="el" href="../../d7/df1/_fast_flow_2_collector_8hpp_source.html">Collector.hpp</a>.</p>
 
 </div>
 </div>

@@ -82,9 +82,9 @@ Inheritance diagram for WorkerFF&lt; T, U &gt;:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:abad8c12f17a8f572800d98a2caccccd9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d8f/struct_worker_f_f.html#abad8c12f17a8f572800d98a2caccccd9">WorkerFF</a> (std::function&lt; T(U x)&gt; fun, int ID, int tsGoal, std::string debugStr)</td></tr>
-<tr class="memdesc:abad8c12f17a8f572800d98a2caccccd9"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../d3/d0a/class_worker.html" title="Implementation of the Worker of the autonomic farm @detail Typename T is used as output type of the f...">Worker</a>'s constructor.  <a href="#abad8c12f17a8f572800d98a2caccccd9">More...</a><br /></td></tr>
-<tr class="separator:abad8c12f17a8f572800d98a2caccccd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a579ddd3b12b1cb7e7d063651adfeb7b1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d8f/struct_worker_f_f.html#a579ddd3b12b1cb7e7d063651adfeb7b1">WorkerFF</a> (std::function&lt; T(U x)&gt; fun, int tsGoal)</td></tr>
+<tr class="memdesc:a579ddd3b12b1cb7e7d063651adfeb7b1"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../d3/d0a/class_worker.html" title="Implementation of the Worker of the autonomic farm @detail Typename T is used as output type of the f...">Worker</a>'s constructor.  <a href="#a579ddd3b12b1cb7e7d063651adfeb7b1">More...</a><br /></td></tr>
+<tr class="separator:a579ddd3b12b1cb7e7d063651adfeb7b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe13a41e97f950ea972a9d68acb7f7fb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d72/struct_task.html">Task</a>&lt; T, U &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d8f/struct_worker_f_f.html#afe13a41e97f950ea972a9d68acb7f7fb">svc</a> (<a class="el" href="../../d3/d72/struct_task.html">Task</a>&lt; T, U &gt; *t)</td></tr>
 <tr class="separator:afe13a41e97f950ea972a9d68acb7f7fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a17f3cba8b357158b8b1056a723a9d69d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d8f/struct_worker_f_f.html#a17f3cba8b357158b8b1056a723a9d69d">svc_end</a> ()</td></tr>
@@ -100,8 +100,8 @@ struct WorkerFF&lt; T, U &gt;</h3>
 
 <p class="definition">Definition at line <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html#l00021">21</a> of file <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html">Worker.hpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="abad8c12f17a8f572800d98a2caccccd9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abad8c12f17a8f572800d98a2caccccd9">&#9670;&nbsp;</a></span>WorkerFF()</h2>
+<a id="a579ddd3b12b1cb7e7d063651adfeb7b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a579ddd3b12b1cb7e7d063651adfeb7b1">&#9670;&nbsp;</a></span>WorkerFF()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -121,19 +121,7 @@ template&lt;typename T , typename U &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>ID</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>tsGoal</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>debugStr</em>&#160;</td>
+          <td class="paramname"><em>tsGoal</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -159,8 +147,8 @@ template&lt;typename T , typename U &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html#l00052">52</a> of file <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html">Worker.hpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;                                                                              {</div><div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        this-&gt;fun = fun;</div><div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        this-&gt;ID = ID;</div><div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        this-&gt;tsGoal = tsGoal;</div><div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        this-&gt;debugStr = debugStr;</div><div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    }</div></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html#l00033">33</a> of file <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html">Worker.hpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;                                                  {</div><div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        this-&gt;fun = fun;</div><div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        this-&gt;tsGoal = tsGoal;</div><div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    }</div></div><!-- fragment -->
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -190,8 +178,8 @@ template&lt;typename T , typename U &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html#l00079">79</a> of file <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html">Worker.hpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;                               {</div><div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="comment">//std::cout &lt;&lt; &quot;EOS &quot; &lt;&lt; this-&gt;ID &lt;&lt; std::endl;</span></div><div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    }</div></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html#l00059">59</a> of file <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html">Worker.hpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                               {</div><div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="comment">//std::cout &lt;&lt; &quot;EOS &quot; &lt;&lt; this-&gt;ID &lt;&lt; std::endl;</span></div><div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    }</div></div><!-- fragment -->
 </div>
 </div>
 <a id="afe13a41e97f950ea972a9d68acb7f7fb"></a>
@@ -220,8 +208,8 @@ template&lt;typename T , typename U &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html#l00059">59</a> of file <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html">Worker.hpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                                   {</div><div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="comment">/*</span></div><div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">            I store in the task structure the starting time of the worker</span></div><div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">            and the ending time. Then i send the task to the collector</span></div><div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">            and also to the emitter as a feedback.</span></div><div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">        */</span></div><div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        t-&gt;<a class="code" href="../../d3/d72/struct_task.html#a508872c6e04fecc3ce51c7eb04eaf3a1">startingTime</a> = std::chrono::high_resolution_clock::now();</div><div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        t-&gt;<a class="code" href="../../d3/d72/struct_task.html#ae2aafaf75f32d960e6c4dd2f26e67d31">result</a> = fun(t-&gt;<a class="code" href="../../d3/d72/struct_task.html#a6425799190e4ef76af8baed5844317a2">value</a>);</div><div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        t-&gt;<a class="code" href="../../d3/d72/struct_task.html#a79d80c9508d7bf3f013a7d3b00a5762f">endingTime</a> = std::chrono::high_resolution_clock::now();</div><div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;</div><div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        setNewNWorker(t);</div><div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        this-&gt;ff_send_out_to(t, 1);</div><div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        this-&gt;ff_send_out_to(t, 0);</div><div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        <span class="keywordflow">return</span> this-&gt;GO_ON;</div><div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    }</div><div class="ttc" id="struct_task_html_a508872c6e04fecc3ce51c7eb04eaf3a1"><div class="ttname"><a href="../../d3/d72/struct_task.html#a508872c6e04fecc3ce51c7eb04eaf3a1">Task::startingTime</a></div><div class="ttdeci">std::chrono::high_resolution_clock::time_point startingTime</div><div class="ttdoc">Starting time of the task.</div><div class="ttdef"><b>Definition:</b> <a href="../../d6/d1e/_task_8hpp_source.html#l00023">Task.hpp:23</a></div></div>
+<p class="definition">Definition at line <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html#l00038">38</a> of file <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html">Worker.hpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                                   {</div><div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <span class="comment">/*</span></div><div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">            I store in the task structure the starting time of the worker</span></div><div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">            and the ending time. Then i send the task to the collector</span></div><div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">            and also to the emitter as a feedback.</span></div><div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment">        */</span></div><div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        t-&gt;<a class="code" href="../../d3/d72/struct_task.html#a508872c6e04fecc3ce51c7eb04eaf3a1">startingTime</a> = std::chrono::high_resolution_clock::now();</div><div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        t-&gt;<a class="code" href="../../d3/d72/struct_task.html#ae2aafaf75f32d960e6c4dd2f26e67d31">result</a> = fun(t-&gt;<a class="code" href="../../d3/d72/struct_task.html#a6425799190e4ef76af8baed5844317a2">value</a>);</div><div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        t-&gt;<a class="code" href="../../d3/d72/struct_task.html#a79d80c9508d7bf3f013a7d3b00a5762f">endingTime</a> = std::chrono::high_resolution_clock::now();</div><div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;</div><div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <span class="comment">// Send task to collector</span></div><div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        this-&gt;ff_send_out_to(t, 1);</div><div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        <span class="comment">// Send ack to emitter</span></div><div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        this-&gt;ff_send_out_to(t, 0);</div><div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keywordflow">return</span> this-&gt;GO_ON;</div><div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    }</div><div class="ttc" id="struct_task_html_a508872c6e04fecc3ce51c7eb04eaf3a1"><div class="ttname"><a href="../../d3/d72/struct_task.html#a508872c6e04fecc3ce51c7eb04eaf3a1">Task::startingTime</a></div><div class="ttdeci">std::chrono::high_resolution_clock::time_point startingTime</div><div class="ttdoc">Starting time of the task.</div><div class="ttdef"><b>Definition:</b> <a href="../../d6/d1e/_task_8hpp_source.html#l00023">Task.hpp:23</a></div></div>
 <div class="ttc" id="struct_task_html_ae2aafaf75f32d960e6c4dd2f26e67d31"><div class="ttname"><a href="../../d3/d72/struct_task.html#ae2aafaf75f32d960e6c4dd2f26e67d31">Task::result</a></div><div class="ttdeci">T result</div><div class="ttdef"><b>Definition:</b> <a href="../../d6/d1e/_task_8hpp_source.html#l00019">Task.hpp:19</a></div></div>
 <div class="ttc" id="struct_task_html_a6425799190e4ef76af8baed5844317a2"><div class="ttname"><a href="../../d3/d72/struct_task.html#a6425799190e4ef76af8baed5844317a2">Task::value</a></div><div class="ttdeci">U value</div><div class="ttdoc">Input value of the function to be computed.</div><div class="ttdef"><b>Definition:</b> <a href="../../d6/d1e/_task_8hpp_source.html#l00017">Task.hpp:17</a></div></div>
 <div class="ttc" id="struct_task_html_a79d80c9508d7bf3f013a7d3b00a5762f"><div class="ttname"><a href="../../d3/d72/struct_task.html#a79d80c9508d7bf3f013a7d3b00a5762f">Task::endingTime</a></div><div class="ttdeci">std::chrono::high_resolution_clock::time_point endingTime</div><div class="ttdoc">Ending time of the task.</div><div class="ttdef"><b>Definition:</b> <a href="../../d6/d1e/_task_8hpp_source.html#l00025">Task.hpp:25</a></div></div>
@@ -253,8 +241,8 @@ template&lt;typename T , typename U &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html#l00075">75</a> of file <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html">Worker.hpp</a>.</p>
-<div class="fragment"><div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                   {</div><div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="comment">//std::cout &lt;&lt; &quot;Going to sleep &quot; &lt;&lt; this-&gt;ID &lt;&lt; std::endl;</span></div><div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    }</div></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html#l00055">55</a> of file <a class="el" href="../../d3/dc6/_fast_flow_2_worker_8hpp_source.html">Worker.hpp</a>.</p>
+<div class="fragment"><div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                   {</div><div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="comment">//std::cout &lt;&lt; &quot;Going to sleep &quot; &lt;&lt; this-&gt;ID &lt;&lt; std::endl;</span></div><div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    }</div></div><!-- fragment -->
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
