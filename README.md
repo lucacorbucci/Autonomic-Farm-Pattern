@@ -1,5 +1,7 @@
 # Parallel and Distributed Systems: Paradigms and Models
 
+This is the final project of the course "Parallel and Distributed Systems: Paradigms and Models" at the University of Pisa.
+
 ## Autonomic-Farm-Pattern
 
 ### Description
